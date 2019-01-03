@@ -1,0 +1,139 @@
+/* vim:textwidth=80:shiftwidth=2:softtabstop=2:expandtab
+ */
+div.slide.cover {
+  color: white;
+  background-color: #00549f;
+  height: 100%;
+}
+
+div.cover div.titlebox {
+  /*
+  height: -moz-calc(100% - 100px);
+  height: -ms-calc(100% - 100px);
+  height: -webkit-calc(100% - 300px);
+  */
+  /*height: 30%;*/
+}
+
+div.slide.cover h2 {
+  color: white;
+}
+
+div.slide.cover a {
+  color: white;
+}
+
+div.slide.cover a:visited { color: white }
+div.slide.cover a:link { color: white }
+div.slide.cover a:hover { color: yellow; text-decoration: underline }
+div.slide.cover a:active { color: yellow; text-decoration: underline }
+
+div.slide.cover a:hover, div.slide.cover a:active {
+  color: yellow; text-decoration: underline;
+}
+
+div.slide.cover a:hover, div.slide.cover a:active {
+    color: yellow; text-decoration: underline;
+}
+
+div.slide.cover h1 {
+  position: relative;
+  top: 10%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  background-color: inherit;
+}
+
+div.slide.cover div.author-info {
+  position: absolute;
+  top: 35%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+div.slide.cover ul.authors {
+  position: relative;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+div.slide.cover ul.authors {
+  margin-top: 3ex;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 3ex;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+div.slide.cover ul.authors li {
+  display: inline;
+}
+
+div.slide.cover ul.authors>:first-child {
+  background: transparent;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+div.slide.cover div.affiliation {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  height: 3ex;
+}
+
+div.slide.cover div.chair,
+div.slide.cover div.university {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  text-align: center;
+}
+
+div.slide.cover div.chair {
+  left: 0;
+}
+
+div.slide.cover div.university {
+  left: 50%;
+}
+
+div.slide.cover div.chair object,
+div.slide.cover div.university object {
+  display: block;
+  height: 7ex;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 3ex;
+  border: 0;
+}
+
+div.slide.cover .occasion {
+  position: absolute;
+  bottom: 10%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+div.cover p.explanation {
+  font-style: italic;
+  margin-top: 3em;
+}
+
+div.avoid-wrap {
+  display: inline-block;
+}
+
+@media print {
+ div.slide.cover { background: transparent; color: black }
+ div.slide.cover h1 { background: transparent; color: black }
+}

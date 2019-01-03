@@ -1,0 +1,1828 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- vim:textwidth=80:shiftwidth=2:softtabstop=2:expandtab
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-US">
+<head>
+  <title>Plan Recognition by Program Execution in Continuous Temporal Domains</title>
+  <meta name="copyright" content="C. Schwering, D. Beck, S. Schiffer, G. Lakemeyer, &nbsp;&nbsp; Knowledge-Based Systems Group, &nbsp;&nbsp; RWTH Aachen" />
+  <meta name="duration" content="20" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      showProcessingMessages: false,
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: { equationNumbers: { autoNumber: "AMS" } },
+      "HTML-CSS": { availableFonts: ["TeX"] }, // this avoids ugly STIX fonts when installed at the client
+    });
+  </script>
+  <!--
+  For some reason, the unpacked MathJax does not have the occasional display
+  errors.  The placement of the math symbols is messed up in about 30% of the
+  page loads when a HTML5 video is embedded.
+  Fix number one was to embed HTML5 videos dynamically which reduced the
+  display errors to maybe 5% or less.
+  Then I tried to fix it by forcing MathJax to re-render by calling
+    MathJax.Hub.setRenderer("SVG");
+  because manually re-rendering with the right-click menu fixes the display
+  errors.  However, setRenderer() works only for the *unpacked* MathJax.
+  And the unpacked MathJax apparently doesn't even have these errors.
+  -->
+
+  <!--
+  We do it dynamically in window.onload() now, because this apparently avoids
+  rendering errors:
+  <script type="text/javascript" src="MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  -->
+
+  <script type="text/javascript">
+  function loadRemoteMathJaxIfNecessary() {
+    // take the same protocol to access MathJax as for accessing the slides.
+    // exception: when the slides are accessed locally, use http for MathJax
+    var path = "//cdn.mathjax.org/mathjax/latest";
+    if (location.protocol.toLowerCase().indexOf("http") != 0) {
+      path = "http:" + path;
+    }
+    loadMathJaxIfNecessary(path);
+  }
+
+  function loadMathJaxIfNecessary(path) {
+    var remote = path.indexOf("http") == 0;
+
+    if (window.MathJax != undefined) { // already loaded
+      return;
+    }
+
+    if (remote) {
+      setTimeout(function () {
+        if (location.protocol.toLowerCase().indexOf("http") == 0) {
+          // for visitors over the Internet, loading MathJax from the MathJax-servers
+          // is totally fine; maybe it's even faster due to client-side caching
+          return;
+        }
+
+        var prompt = document.createElement("div");
+        prompt.style.position = "absolute";
+        prompt.style.left = "25%";
+        prompt.style.top = "20%";
+        prompt.style.width = "50%";
+        prompt.style.height = "60%";
+        prompt.style.backgroundColor = "orange";
+        prompt.style.borderWidth = "thick";
+        prompt.style.borderColor = "black";
+        prompt.style.borderStyle = "solid";
+        prompt.style.overflow = "auto";
+        prompt.style.zIndex = "99";
+
+        prompt.innerHTML = 
+          "<p>You have no local copy of MathJax (in <code>./MathJax<\/code>).<\/p>"+
+          "<p>I'm trying to load MathJax dynamically. If we don't have an Internet connection, "+
+          "this will fail and LaTeX formulas won't be typeset.<\/p>"+
+          "<p>You can <a href=\"https://github.com/mathjax/MathJax/zipball/v2.0-latest\">download MathJax<\/a>, "+
+          "extract the ZIP-file and move the created folder to <code>./MathJax<\/code>."+
+          "<p><b>You can also simply execute <code>./download.sh<\/code> to get MathJax and videos used in this "+
+          "presentation.<\/b><\/p>";
+
+        document.body.appendChild(prompt);
+
+        prompt.addEventListener("click", function (e) {
+          document.body.removeChild(prompt);
+          if (e.cancel != undefined)
+            e.cancel = true;
+          if (e.returnValue != undefined)
+            e.returnValue = false;
+          e.stopPropagation();
+        }, false);
+
+        setTimeout(function() { document.body.removeChild(prompt); }, 20000);
+      }, 1000);
+    }
+
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = path + "/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var config = 'MathJax.Hub.Config({' +
+                   'extensions: ["tex2jax.js"],' +
+                   'jax: ["input/TeX","output/HTML-CSS"]' +
+                 '});' +
+                 'MathJax.Hub.Startup.onload();';
+
+    if (window.opera) {script.innerHTML = config}
+                 else {script.text = config}
+
+    document.getElementsByTagName("head")[0].appendChild(script);
+  };
+  </script>
+
+
+  <link rel="stylesheet" href="styles/slidy.css" type="text/css" />
+  <link rel="stylesheet" href="styles/kbsg.css" type="text/css" />
+  <link rel="stylesheet" href="styles/kbsg-cover.css" type="text/css" />
+  <link rel="stylesheet" href="styles/list.css" type="text/css" />
+  <link rel="stylesheet" href="styles/outline.css" type="text/css" />
+  <link rel="stylesheet" href="styles/custom.css" type="text/css" />
+  <link rel="stylesheet" href="styles/print.css" type="text/css" />
+
+  <script src="scripts/slidy.js" charset="utf-8" type="text/javascript"></script>
+  <script type="text/javascript">
+    /* These objects are associative arrays with keys `slide IDs' and
+     * values `function (slide) { ... }'.
+     * The idea is that the show/hide handler for each slide checks whether
+     * or not there is a initializer/finalizer stored for the current slide
+     * using the slide's ID and, if so, calls it.
+     */
+    var slideInitializers = new Object();
+    var slideFinalizers = new Object();
+
+    function addSlideInitializer(slideId, handler) {
+      if (slideInitializers[slideId] == undefined)
+        slideInitializers[slideId] = new Array();
+      slideInitializers[slideId].push(handler);
+    }
+
+    function addSlideFinalizer(slideId, handler) {
+      if (slideFinalizers[slideId] == undefined)
+        slideFinalizers[slideId] = new Array();
+      slideFinalizers[slideId].push(handler);
+    }
+
+    w3c_slidy.set_show_slide_handler(function (slide) {
+      /* Loading videos lazily might fix the display errors in MathJax. */
+      var videoContainers = slide.getElementsByClassName("video-container");
+      for (var i = 0; i < videoContainers.length; ++i) {
+        var vc = videoContainers[i];
+        var videoName = vc.id;
+        if (vc.innerHTML == null || vc.innerHTML.length == 0) {
+          /* You can set a poster with <video poster="path/poster.jpg"> and
+           * you can enable controls with <video controls="controls"> but
+           * we have disabled controls because sometimes the 'Play' button does
+           * not disappear in Firefox (this is probably due to the dynamically
+           * loading. */
+          vc.innerHTML =
+            '<video class="video" preload="auto" poster="videos/'+ videoName +'.png">'+
+            '<source src="videos/'+ videoName +'.webm" type="video/webm" />'
+            '<\/video>';
+        }
+      }
+
+      /* We play()/pause() videos when a slide is shown/hidden. */
+      var videos = slide.getElementsByClassName("video");
+      for (var i = 0; i < videos.length; ++i) {
+        videos[i].play();
+      }
+
+      /* Call initializers. */
+      if (slide.id != undefined && slideInitializers[slide.id] != undefined) {
+        var arr = slideInitializers[slide.id];
+        for (var i = 0; i < arr.length; ++i) {
+          arr[i](slide);
+        }
+      }
+    });
+
+    w3c_slidy.set_hide_slide_handler(function (slide) {
+      /* We play()/pause() videos when a slide is shown/hidden. */
+      var videos = slide.getElementsByClassName("video");  
+      for (var i = 0; i < videos.length; ++i) {
+        videos[i].pause();
+      }
+
+      /* Call finalizers. */
+      if (slide.id != undefined && slideFinalizers[slide.id] != undefined) {
+        var arr = slideFinalizers[slide.id];
+        for (var i = 0; i < arr.length; ++i) {
+          arr[i](slide);
+        }
+      }
+    });
+
+
+    /* These objects are associative arrays with keys `node IDs' and
+     * values `function (slide, node) { ... }'.
+     * The idea is that the show/hide handler for each node checks whether
+     * or not there is a initializer/finalizer stored for the current node
+     * using the node's ID and, if so, calls it.
+     */
+    var nodeInitializers = new Object();
+    var nodeFinalizers = new Object();
+
+    function addNodeInitializer(nodeId, handler) {
+      if (nodeInitializers[nodeId] == undefined)
+        nodeInitializers[nodeId] = new Array();
+      nodeInitializers[nodeId].push(handler);
+    }
+
+    function addNodeFinalizer(nodeId, handler) {
+      if (nodeFinalizers[nodeId] == undefined)
+        nodeFinalizers[nodeId] = new Array();
+      nodeFinalizers[nodeId].push(handler);
+    }
+
+    w3c_slidy.set_show_node_handler(function (node) {
+      if (node.id != undefined && nodeInitializers[node.id] != undefined) {
+        var arr = nodeInitializers[node.id];
+        for (var i = 0; i < arr.length; ++i) {
+          arr[i](node);
+        }
+      }
+    });
+
+    w3c_slidy.set_hide_node_handler(function (node) {
+      if (node.id != undefined && nodeFinalizers[node.id] != undefined) {
+        var arr = nodeFinalizers[node.id];
+        for (var i = 0; i < arr.length; ++i) {
+          arr[i](node);
+        }
+      }
+    });
+
+    if (location.search.indexOf("time=true") != -1) {
+      w3c_slidy.set_display_time(true);
+    } else {
+      w3c_slidy.set_display_time(false);
+    }
+  </script>
+
+  <script type="text/javascript">
+    function rad2deg(rad) {
+      return rad / Math.PI * 180;
+    }
+
+    function removeChildren(ids) {
+      if (!is_array(ids))
+        ids = new Array(ids);
+      for (var i = 0; i < ids.length; ++i) {
+        var e = document.getElementById(ids[i]);
+        for (var n = e.firstChild; n; ) {
+          if (!w3c_slidy.has_class(n, "unremovable")) {
+            e.removeChild(n);
+            n = e.firstChild;
+          } else {
+            n = n.nextSibling;
+          }
+        }
+      }
+    }
+
+    function is_array(input) {
+      return typeof(input) == "object" && (input instanceof Array);
+    }
+
+    /* A timer that synchronously executes a number of handlers.
+     * Similar to setInterval() except that all handlers are executed
+     * right after another and thus are kept in sync over a long period. */
+    function Timer() {
+      this.events = new Array(); /* { ticks: int, func: func() { ... } } */
+      this.now = 0;
+      this.doPause = false;
+
+      var PERIOD = 10;
+      var timer = this;
+      function loop() {
+        if (timer.doPause) {
+          return;
+        }
+        for (var i = timer.events.length - 1; i >= 0; --i) {
+          if (timer.events[i] != undefined &&
+              timer.now >= timer.events[i].ticks) {
+            timer.events[i].func();
+            timer.events.splice(i, 1);
+          }
+        }
+        timer.now += PERIOD;
+      }
+
+      this.interval = setInterval(loop, PERIOD);
+
+      this.play = function () {
+        this.doPause = false;
+      }
+
+      this.pause = function () {
+        this.doPause = true;
+      }
+
+      this.stop = function () {
+        clearInterval(this.interval);
+      }
+
+      this.addEvent = function (func, ticks) {
+        this.events.push({ ticks: this.now + ticks, func: func });
+      }
+    }
+
+    /* Street object. Utility object for my animations. */
+    function Street(streetId, relWidth, relHeight) {
+      this.WIDTH_TO_HEIGHT = 8 / (relHeight != undefined ? relHeight : 1.0);
+      this.elem = document.getElementById(streetId);
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("width", "100%");
+      this.elem.appendChild(canvas);
+      var ctx = canvas.getContext("2d");
+      ctx.canvas.width = (relWidth != undefined ? relWidth : 1.0) * window.innerWidth * 0.95;
+      ctx.canvas.height = Math.min(window.innerHeight, ctx.canvas.width / this.WIDTH_TO_HEIGHT);
+
+      ctx.fillStyle = "#999999";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      var markHeight = canvas.height / 20;
+      var markWidth = canvas.width / 20;
+      var markYPos = canvas.height / 2 - markHeight / 2;
+      for (var x = markWidth / 2; x < canvas.width; x += 2 * markWidth) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(x, markYPos, markWidth, markHeight);
+      }
+
+      this.ctx = ctx;
+      this.x = function (xRel) { return xRel * canvas.width; }
+      this.y = function (yRel) { return (yRel + 0.5) * canvas.height; }
+      this.laneHeight = (canvas.height - markHeight) / 2;
+    }
+
+    /* Car object. Utility object for my animations. */
+    function Car(img, street, timer) {
+      this.elem = document.createElement("div");
+      this.height = street.laneHeight * 0.75;
+      this.width = this.height * 2;
+      this.elem.style.position = "absolute";
+      this.elem.style.height = this.height + "px";
+      this.elem.style.width = this.width + "px";
+      this.elem.style.backgroundImage = "url(graphics/"+ (is_array(img) ? img[0] : img) +")";
+      this.elem.style.backgroundSize = "contain";
+      this.elem.style.backgroundRepeat = "no-repeat";
+      this.elem.style.backgroundPosition = "center center";
+      this.elem.style.display = "none";
+      street.elem.appendChild(this.elem);
+
+      /* Current position of the car wrt the center point of the car. */
+      this.xPixel = undefined;
+      this.yPixel = undefined;
+
+      this.clones = new Array();
+      this.cloneIdCtr = 0;
+
+      this.hardCopy = function () {
+        var copy = new Car(img, street, timer);
+        copy.elem.style.height = this.elem.style.height;
+        copy.elem.style.width = this.elem.style.width;
+        copy.elem.style.left = this.elem.style.left;
+        copy.elem.style.bottom = this.elem.style.bottom;
+        copy.elem.style.MozTransform = this.elem.style.MozTransform;
+        copy.elem.style.msTransform = this.elem.style.msTransform;
+        copy.elem.style.OTransform = this.elem.style.OTransform;
+        copy.elem.style.WebkitTransform = this.elem.style.WebkitTransform;
+        copy.elem.style.transform = this.elem.style.transform;
+        copy.elem.style.display = "block";
+        return copy;
+      };
+
+      this.snapshots = new Array();
+
+      this.snapshotCopy = function (show) {
+        var copy = this.hardCopy();
+        copy.elem.style.opacity = 0.5;
+        copy.elem.style.display = (show != undefined && show) ? "block" : "none";
+        this.snapshots.push(copy);
+        return copy;
+      }
+
+      this.showSnapshots = function () {
+        for (var i = 0; i < this.snapshots.length; ++i) {
+          this.snapshots[i].elem.style.display = "block";
+        }
+      }
+
+      this.hideSnapshots = function () {
+        for (var i = 0; i < this.snapshots.length; ++i) {
+          this.snapshots[i].elem.style.display = "none";
+        }
+      }
+
+      this.position = function (f, x) {
+        var y = f(x);
+        var rad = Math.atan2(street.y(f(x+0.01)) - street.y(f(x-0.01)),
+                             street.x(  x+0.01 ) - street.x(  x-0.01 ));
+        var deg = rad2deg(rad);
+        deg *= -1;
+        var maxLeft = street.ctx.canvas.width - this.width;
+        this.xPixel = street.x(x) - this.width / 2;// Math.min(maxLeft, street.x(x));
+        this.yPixel = street.y(y);
+        this.elem.style.left = (this.xPixel - this.width / 2) + "px";
+        this.elem.style.bottom = (this.yPixel - this.height / 2) + "px";
+        var transform = "rotate("+ deg +"deg)";
+        this.elem.style.MozTransform = transform;
+        this.elem.style.msTransform = transform;
+        this.elem.style.OTransform = transform;
+        this.elem.style.WebkitTransform = transform;
+        this.elem.style.transform = transform;
+        if (is_array(img)) {
+          var i = Math.floor(x * 23) % img.length;
+          this.elem.style.backgroundImage = "url(graphics/"+ img[i] +")";
+        }
+        this.elem.style.display = "block";
+      };
+
+      this.reset = function (func) {
+        if (func != undefined) {
+          this.position(func, 0.0);
+        } else {
+          this.position(function (x) { return maneuvers.straightRight(x); }, 0.0);
+        }
+      };
+
+      this.move = function (args) {
+        if (args.delay != undefined) {
+          var delay = args.delay;
+          args.delay = undefined;
+          var car = this;
+          timer.addEvent(function() { car.move(args); }, delay * 1000);
+          return;
+        }
+
+        if (args.hasBeenResetted == undefined || !args.hasBeenResetted) {
+          this.reset(args.trace);
+          args.hasBeenResetted = true;
+        }
+
+        var DELTA = 0.2 / args.fps * args.veloc(args.x);
+
+        if (args.skip != undefined) {
+          if (args.frameNumber == undefined) {
+            args.frameNumber = 0;
+          }
+          if (((args.frameNumber++) % args.skip) != 0) {
+            var car = this;
+            if (args.update != null)
+              args.update(args.x);
+            args.x += DELTA;
+            timer.addEvent(function() { car.move(args) } , 1000 / args.fps);
+            return;
+          }
+        }
+
+        if (args.doTrace != undefined && args.doTrace) {
+          street.ctx.strokeStyle = args.color ? args.color : "black"; // different colors for different cars don't work, why?
+          street.ctx.moveTo(this.xPixel, street.ctx.canvas.height - this.yPixel); // canvas has opposite Y axis than CSS
+        }
+        this.position(args.trace, args.x);
+        if (args.update != null)
+          args.update(args.x);
+        if (args.doTrace != undefined && args.doTrace) {
+          street.ctx.lineTo(this.xPixel, street.ctx.canvas.height - this.yPixel); // canvas has opposite Y axis than CSS
+          street.ctx.stroke();
+        }
+        if (this.xPixel - this.width / 2 <= street.ctx.canvas.width) { // continue until the whole car has left the street
+          args.x += DELTA;
+          var car = this;
+          timer.addEvent(function() { car.move(args) } , 1000 / args.fps);
+        } else {
+          //this.elem.style.display = "none";
+          if (args.finishHandler != undefined) {
+            args.finishHandler();
+          }
+        }
+      };
+    };
+
+    /* Maneuvers container. See Car.move(). Utility object for my animations. */
+    var maneuvers = {
+      noise : function (x) {
+        return Math.sin(2 * 2 * Math.PI * x) / 15;
+      },
+
+      straightRight : function (x) {
+        return -0.25;
+      },
+
+      straightRightWithNoise : function (x) {
+        return maneuvers.straightRight(x) + maneuvers.noise(x);
+      },
+
+      straightRightWithSlightNoise : function (x) {
+        return maneuvers.straightRight(x) + maneuvers.noise(x) / 5;
+      },
+
+      straightLeft : function (x) {
+        return 0.25;
+      },
+
+      straightLeftWithNoise : function (x) {
+        return maneuvers.straightLeft(x) + maneuvers.noise(x);
+      },
+
+      llc : function (x) {
+        return Math.atan((x - 0.3) * 10) / (Math.PI / 2) * 0.3;
+      },
+
+      rlc : function (x) {
+        return Math.atan((1 - (x + 0.8)) * 10) / (Math.PI / 2) * 0.3;
+      },
+
+      overtake : function (x) {
+        if (x < 0.5)
+          return maneuvers.llc(x);
+        else
+          return maneuvers.rlc(x - 0.5);
+      },
+
+      slowOvertake : function (x) {
+        if (x < 0.3)
+          return maneuvers.llc(0.5 / 0.3 * x);
+        else if (x < 0.5)
+          return maneuvers.llc(0.5);
+        else if (x < 0.7)
+          return maneuvers.rlc(0.0);
+        else
+          return maneuvers.rlc(0.5 / 0.3 * (x - 0.7));
+      },
+
+      slopeModel : function (start, end) {
+        return Math.abs(maneuvers.straightRight(start) - maneuvers.straightLeft(end)) / (end - start);
+      },
+
+      llcModel : function (llcStart, llcEnd) {
+        return function (x) {
+          if (x < llcStart) {
+            return maneuvers.straightRight(x);
+          } else if (x < llcEnd) {
+            return (x - llcStart) * maneuvers.slopeModel(llcStart, llcEnd) + maneuvers.straightRight(llcStart);
+          } else {
+            return maneuvers.straightLeft(x);
+          }
+        };
+      },
+
+      rlcModel : function (rlcStart, rlcEnd) {
+        return function (x) {
+          if (x < rlcStart) {
+            return maneuvers.straightLeft(x);
+          } else if (x < rlcEnd) {
+            return (x - rlcStart) * (-1) * maneuvers.slopeModel(rlcStart, rlcEnd) + maneuvers.straightLeft(rlcStart);
+          } else {
+            return maneuvers.straightRight(x);
+          }
+        };
+      },
+
+      overtakeModel : function (x) {
+        return x < 0.5 ? (maneuvers.llcModel(0.2, 0.4))(x) : (maneuvers.rlcModel(0.6, 0.8))(x);
+      }
+    }
+
+    function waitUntil(cond, delay, proc) {
+      if (cond())
+        proc();
+      else
+        setTimeout(function() { waitUntil(cond, delay, proc); }, delay);
+    }
+
+    window.onload = function () {
+
+      /* When we are in presentation mode, we don't want to have scrollbars. */
+      if (location.search.indexOf("mode=presentation") != -1) {
+
+        /* Hacky: I've manually checked for these slides that the slides fit on
+         * 1024 x 768 in fullscreen, but on 800 x 600 and 832 x 624 we need to
+         * hit `s' for smaller scaling two times. */
+        if (window.innerHeight < 700 || window.innerWidth < 1000) {
+          w3c_slidy.smaller();
+          //w3c_slidy.smaller();
+        }
+
+        /* This is only for presentation mode to avoid the the scrollbars that
+         * occur due to some (empty) DIVs.
+         * When the slides are uploaded, there should be scrollbars. */
+        var bodies = document.getElementsByTagName("body");
+        for (var i = 0; i < bodies.length; ++i) {
+          bodies[i].style.overflow = "hidden";
+        }
+      }
+
+      /* Hacky: We first try to load a local copy of MathJax and wait some
+       * seconds to load it from remote, if the local copy is not available. */
+      loadMathJaxIfNecessary("MathJax");
+      setTimeout(loadRemoteMathJaxIfNecessary, 3 * 1000);
+
+    };
+
+  </script>
+</head>
+<body>
+
+  <div style="display: none;">
+    $
+    \DeclareMathOperator{\DOT}{.}
+    \DeclareMathOperator{\nondet}{|}
+    \newcommand\conc{\parallel}
+    \newcommand\concNarrow{\!\parallel\!}
+    \newcommand\D{\mathcal{D}}
+    \newcommand\C{\mathcal{C}}
+    \newcommand\R{\mathcal{R}}
+    \newcommand\bigO{\mathcal{O}}
+    \newcommand\rew{{r}}
+    \newcommand\subwedge{\,\wedge\,}
+    \newcommand\submid{\,\mid\,}
+    \newcommand\Tau{\mathrm{T}}
+    \newcommand\defeq{\stackrel{\text{\tiny\sf def}}{=}}
+    \newcommand\ang[1]{\ensuremath{#1^\circ}}
+    \newcommand\act[1]{\mathsf{#1}}
+    \newcommand\N[1]{\mathit{#1}}
+    $
+  </div>
+
+
+<!--
+<div class="background">
+  <object id="logo-left" data="graphics/kbsg-logo-original.svg" type="image/svg+xml" title="KBSG">
+    <img alt="KBSG" id="logo-left-fallback" src="graphics/kbsg-logo.png" />
+  </object>
+  <object id="logo-right" data="graphics/rwth-logo.svg" type="image/svg+xml" title="RWTH">
+    <img alt="RWTH" id="logo-right-fallback" src="graphics/rwth-logo.jpg" />
+  </object>
+</div>
+-->
+
+
+<div class="slide cover title">
+  <!-- hidden style graphics to ensure they are saved with other content -->
+  <img class="hidden" src="graphics/car-police.png" alt="" />
+  <img class="hidden" src="graphics/car-police-red.png" alt="" />
+  <img class="hidden" src="graphics/car-police-blue.png" alt="" />
+  <img class="hidden" src="graphics/car-red.png" alt="" />
+  <img class="hidden" src="graphics/car-yellow.png" alt="" />
+  <img class="hidden" src="graphics/car-transparent.png" alt="" />
+  <img class="hidden" src="graphics/blue-question-mark.png" alt="" />
+  <img class="hidden" src="graphics/green-check-mark.png" alt="" />
+  <img class="hidden" src="graphics/red-cross.png" alt="" />
+  <img class="hidden" src="graphics/bullet.png" alt="" />
+  <img class="hidden" src="graphics/fold.gif" alt="" />
+  <img class="hidden" src="graphics/unfold.gif" alt="" />
+  <img class="hidden" src="graphics/fold-dim.gif" alt="" />
+  <img class="hidden" src="graphics/nofold-dim.gif" alt="" />
+  <img class="hidden" src="graphics/unfold-dim.gif" alt="" />
+  <img class="hidden" src="graphics/bullet-fold.gif" alt="" />
+  <img class="hidden" src="graphics/bullet-unfold.gif" alt="" />
+  <img class="hidden" src="graphics/bullet-fold-dim.gif" alt="" />
+  <img class="hidden" src="graphics/bullet-nofold-dim.gif" alt="" />
+  <img class="hidden" src="graphics/bullet-unfold-dim.gif" alt="" />
+
+  <h1><span class="avoid-break">Plan Recognition by Program Execution</span> <span class="avoid-break">in Continuous Temporal Domains</span></h1>
+
+  <div class="author-info">
+    <ul class="authors no-bullet">
+      <li><a href="mailto:schwering@kbsg.rwth-aachen.de">Christoph Schwering</a></li>
+      <li><a href="mailto:beck@kbsg.rwth-aachen.de">Daniel Beck</a></li>
+      <li><a href="mailto:schiffer@kbsg.rwth-aachen.de">Stefan Schiffer</a></li>
+      <li><a href="mailto:gerhard@kbsg.rwth-aachen.de">Gerhard Lakemeyer</a></li>
+    </ul>
+
+    <div class="affiliation">
+      <div class="chair">
+        Knowledge-Based Systems Group
+        <object data="graphics/kbsg-logo.svg" type="image/svg+xml" title="KBSG">
+          <img alt="KBSG" src="graphics/kbsg-logo.png" />
+        </object>
+      </div>
+
+      <div class="university">
+        RWTH Aachen University
+        <object data="graphics/rwth-logo-inverted.svg" type="image/svg+xml" title="RWTH">
+          <img alt="RWTH" src="graphics/rwth-logo.jpg" />
+        </object>
+      </div>
+    </div>
+  </div>
+
+  <p class="occasion">Cognitive Robotics Workshop 2012</p>
+</div>
+
+<div class="slide">
+  <h1>Motivation</h1>
+  <div class="bodybox">
+    <ul>
+      <li>What?
+      <ul>
+        <li>plan recognition</li>
+        <li>automobile traffic</li>
+      </ul>
+      </li>
+      <li>Why?
+      <ul>
+        <li>continuous world</li>
+        <li>multiple agents</li>
+        <li>no action sensor</li>
+      </ul>
+      </li>
+      <li>How?
+      <ul>
+        <li>pre-defined set of programs = typical behavior</li>
+        <li>simulate program execution</li>
+        <li>match simulation and reality</li>
+      </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="slide" id="passing-slide">
+  <h1>Passing Maneuvers</h1>
+  <div class="bodybox">
+    <div id="passing-street1" class="street stop-traversal no-print">
+      <div class="unremovable streetlabel">Real: cont., noisy</div>
+    </div>
+    <div id="passing-street2" class="street stop-traversal incremental no-print">
+      <div class="unremovable streetlabel">Observed: discrete, noisy</div>
+    </div>
+    <div id="passing-street3" class="street stop-traversal incremental no-print">
+      <div class="unremovable streetlabel">Model: cont., instantaneous</div>
+    </div>
+    <div class="only-print">
+      <dl>
+        <dt>Reality:</dt>
+        <dd>continuous movement, continuous actions, noise</dd>
+        <dt>Observations:</dt>
+        <dd>discrete sequence of snapshots, noisy</dd>
+        <dt>Model:</dt>
+        <dd>continuous movement, instantaneous actions, no noise</dd>
+      </dl>
+      <ul>
+        <li>Actions are not observable directly</li>
+        <li>Multiple agents act in parallel</li>
+      </ul>
+    </div>
+  </div>
+  <script type="text/javascript">
+    function passing_animation() {
+      var timer = null;
+
+      function clearManeuvers() {
+        if (timer != null)
+          timer.stop();
+        timer = null;
+        removeChildren(["passing-street1", "passing-street2", "passing-street3"]);
+      }
+
+      var carsArrived = 0;
+      function finishHandler() {
+        ++carsArrived;
+        if (carsArrived == 6) {
+          setTimeout(function() {
+            clearManeuvers();
+            runManeuvers();
+            carsArrived = 0;
+          }, 0);
+        }
+      }
+
+      var DELAY = 2.0;
+      var VELOC_RED = 0.6;
+      var VELOC_POL = 1.3;
+
+      function runRealPassingManeuver(streetId) {
+        var fps = 25;
+        var street = new Street(streetId);
+        var car1 = new Car("car-red.png", street, timer);
+        var car2 = new Car("car-police.png", street, timer);
+
+        car1.move({
+          fps : fps,
+          veloc : function (x) { return VELOC_RED; },
+          trace : maneuvers.straightRightWithNoise,
+          x : 0.0,
+          doTrace : true,
+          finishHandler : function () { finishHandler(); }
+        });
+
+        car2.move({
+          delay : DELAY,
+          fps : fps,
+          veloc : function (x) { return VELOC_POL; },
+          trace : maneuvers.overtake,
+          x : 0.0,
+          doTrace : true,
+          finishHandler : finishHandler
+        });
+      }
+
+      function runObservedPassingManeuver(streetId) {
+        var fps = 1.0;// 25;
+        var street = new Street(streetId);
+        var car1 = new Car("car-red.png", street, timer);
+        var car2 = new Car("car-police.png", street, timer);
+
+        car1.move({
+          fps : fps,
+          veloc : function (x) { return VELOC_RED; },
+          trace : maneuvers.straightRightWithNoise,
+          update : function (x) {
+            car1.elem.style.display = "none";
+            var copy = car1.snapshotCopy(true);
+            copy.elem.style.opacity = 1.0;
+            if (car1.snapshots.length > 1)
+              car1.snapshots[car1.snapshots.length - 2].elem.style.opacity = 0.5;
+            //if (3000 <= timer.now && timer.now <= 5000 && car1.snapshots.length > 0) {
+              //var copy = car1.snapshots[car1.snapshots.length - 1];
+              var label = document.createElement("div");
+              w3c_slidy.add_class(label, "car-label");
+              label.innerHTML = "T<sub>"+ (timer.now / (1000 / fps)).toFixed(0) +"<\/sub>";
+              copy.elem.appendChild(label);
+            //}
+          },
+          x : 0.0,
+          finishHandler : function () { /*car1.hideSnapshots(); car2.hideSnapshots();*/ finishHandler(); }
+        });
+
+        car2.move({
+          delay : DELAY,
+          fps : fps,
+          veloc : function (x) { return VELOC_POL; },
+          trace : maneuvers.overtake,
+          update : function (x) {
+            car2.elem.style.display = "none";
+            var copy = car2.snapshotCopy(true);
+            copy.elem.style.opacity = 1.0;
+            if (car1.snapshots.length > 1)
+              car2.snapshots[car2.snapshots.length - 2].elem.style.opacity = 0.5;
+            if (car2.snapshots.length > 0) {
+              //var copy = car2.snapshots[car2.snapshots.length - 1];
+              var label = document.createElement("div");
+              w3c_slidy.add_class(label, "car-label");
+              label.innerHTML = "T<sub>"+ (timer.now / (1000 / fps)).toFixed(0) +"<\/sub>";
+              copy.elem.appendChild(label);
+            }
+          },
+          x : 0.0,
+          finishHandler : finishHandler
+        });
+      }
+
+      function runModelPassingManeuver(streetId) {
+        var fps = 25;
+        var street = new Street(streetId);
+        var car1 = new Car("car-red.png", street, timer);
+        var car2 = new Car("car-police.png", street, timer);
+
+        car1.move({
+          fps : fps,
+          veloc : function (x) { return VELOC_RED; },
+          trace : maneuvers.straightRight,
+          x : 0.0,
+          doTrace : true,
+          finishHandler : function () { finishHandler(); }
+        });
+
+        car2.move({
+          delay : DELAY,
+          fps : fps,
+          veloc : function (x) { return VELOC_POL; },
+          trace : maneuvers.overtakeModel,
+          x : 0.0,
+          doTrace : true,
+          finishHandler : finishHandler
+        });
+      }
+
+      function runManeuvers() {
+        timer = new Timer();
+        runRealPassingManeuver("passing-street1");
+        runObservedPassingManeuver("passing-street2");
+        runModelPassingManeuver("passing-street3");
+      }
+
+      addSlideInitializer("passing-slide", function (slide) { clearManeuvers(); runManeuvers(); });
+      addSlideFinalizer("passing-slide", function (slide) { clearManeuvers(); });
+      //addNodeInitializer("passing-street2", function (node) { clearManeuvers(); runManeuvers(); });
+      //addNodeInitializer("passing-street3", function (node) { clearManeuvers(); runManeuvers(); });
+      // buggy and not neccessary:
+      //addNodeFinalizer("passing-street2", function (node) { clearManeuvers(); });
+      //addNodeFinalizer("passing-street3", function (node) { clearManeuvers(); });
+    }
+
+    passing_animation();
+  </script>
+</div>
+
+<div class="slide">
+  <h1>Foundations</h1>
+  <div class="bodybox">
+    <ul>
+      <li>Situation Calculus
+      <ul>
+        <li>actions are instantaneous</li>
+        <li>situations $S_0$, $do(a, s)$</li>
+        <li>fluents = situation-dependent predicates / functions
+        <!--
+        \[ F(\vec{x}, do(a, s)) \equiv
+        \underbrace{\gamma_F^+(\vec{x}, a, s)}_\text{switched on?} \ \vee \
+        F(\vec{x}, s) \wedge \underbrace{\neg \gamma_F^-(\vec{x}, a, s)}_\text{not switched off?} \]</li>
+        -->
+        <li>preconditions $Poss(a, s)$</li>
+      </ul>
+      <li>Golog
+      <ul>
+        <li>action language</li>
+        <li>nondeterminism allows different executions</li>
+        <li>programs like
+        <div class="code" style="margin-top: 1.5ex; margin-bottom: 1.5ex;">
+          <div class="line">$\pi \theta$ . setYaw($\theta$);</div>
+          <div class="line">waitFor(onTurningLane);</div>
+          <div class="line"><b>if</b> redLight <b>then</b></div>
+          <div class="line" style="left: 1.5em;">setVeloc(0)</div>
+        </div>
+        </li>
+      </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="slide">
+  <h1>Car Model</h1>
+  <div class="bodybox">
+    <ul>
+      <li>Actions:
+      <div style="display: inline; position: absolute; left: 10em;">
+        $setVeloc(car, v, \tau)$
+      </div>
+      <div style="display: inline; position: absolute; left: 22.5em;">
+        $setYaw(car, \theta, \tau)$
+      </div>
+      </li>
+      <li>Fluents:
+      <div style="display: inline; position: absolute; left: 10em;">
+        $veloc(car, s) = v$
+      </div>
+      <div style="display: inline; position: absolute; left: 22.5em;">
+        $yaw(car, s) = \theta$
+      </div>
+      </li>
+      <li class="no-bullet">
+      <div class="tab"></div>longitude:
+      <div style="display: inline; position: absolute; left: 10em;">
+        $x(car, s) = linear(x_0, \cos \theta \cdot v, \tau)$ &nbsp; &nbsp; &nbsp; &nbsp;
+      </div>
+      </li>
+      <li class="no-bullet">
+      <div class="tab"></div>latitude:
+      <div style="display: inline; position: absolute; left: 10em;">
+        $y(car, s) = linear(y_0, \sin \theta \cdot v, \tau)$ &nbsp; &nbsp; &nbsp; &nbsp;
+      </div>
+      <!--<span style="font-size: 70%;">stands for $f(\tau') = x_0 + \sin \theta \cdot v \cdot (\tau' - \tau)$</span>-->
+      </li>
+      <li class="no-bullet">
+      <div class="tab"></div>
+      $linear(x_0, a, \tau)$ stands for $f(\tau') = x_0 + a \cdot (\tau' - \tau)$
+      </li>
+    </ul>
+</div>
+</div>
+
+<div class="slide" id="model-slide">
+  <h1>Car Model</h1>
+  <div class="bodybox">
+    <div class="no-print" style="margin-top: 5ex; margin-bottom: 5ex;">
+      <div class="model-act-line">
+        <div id="model-act-1" style="right: 55%;"></div>
+        <div id="model-act-2" style="left: 50%;"></div>
+      </div>
+      <div id="model-street" class="street stop-traversal">
+        <div class="unremovable streetlabel">Time: <span id="model-time"></span></div>
+      </div>
+      <div class="model-act-line">
+        <div id="model-act-0" style="left: 10%;"></div>
+        <div id="model-act-3" style="right: 10%;"></div>
+      </div>
+      <p id="model-sit" style="display: none; margin-top: 3ex; margin-left: 3em;">S<sub>0</sub></p>
+    </div>
+    <div class="only-print">
+      <ul>
+        <li>Actions are instantaneous, but change is continuous (X, Y position)</li>
+        <li>Time is encoded as (last) parameter in actions</li>
+        <li>A left-lane-change that starts after 3 and ends after 6.1 seconds:<br />
+        do(setYaw(P, 0.0&deg;, 6.1), do(setYaw(P, -8.9&deg;, 3.0), S<sub>0</sub>))</li>
+      </ul>
+    </div>
+  </div>
+  <script type="text/javascript">
+    function model_animation() {
+      var timer = null;
+      var start = undefined;
+      var sitLen = 0;
+
+      function clearManeuver(justRestart) {
+        if (timer != null)
+          timer.stop();
+        timer = null;
+        start = undefined;
+        sitLen = 0;
+        removeChildren(["model-street"]);
+        for (var i = 0; i < MAX_SIT_LEN; ++i) {
+          var e = document.getElementById("model-act-"+ i);
+          if (justRestart == undefined || !justRestart) {
+            e.style.visibility = "hidden";
+          }
+          e.style.color = "black";
+        }
+        document.getElementById("model-sit").innerHTML = "S<sub>0<\/sub>";
+        //document.getElementById("model-sit").innerHTML = "$S_0$";
+        //MathJax.Hub.Queue(["Typeset", MathJax.Hub, "model-sit"]);
+      }
+
+      function finishHandler() {
+        setTimeout(function() {
+          clearManeuver(true);
+          runManeuver();
+        }, 1000);
+        for (var i = 0; i < MAX_SIT_LEN; ++i) {
+          var e = document.getElementById("model-act-"+ i);
+          e.style.color = "black";
+        }
+      }
+
+      var VELOC_POL = 0.3;
+      var MAX_SIT_LEN = 4;
+
+      function runModel(streetId) {
+        var fps = 25;
+        var street = new Street(streetId);
+        var car = new Car("car-police.png", street, timer);
+
+        var llcStart = 0.2;
+        var llcEnd = 0.4;
+        var rlcStart = 0.6;
+        var rlcEnd = 0.8;
+
+        car.move({
+          fps : fps,
+          veloc : function (x) { return VELOC_POL; },
+          update : function (x) {
+            if (start == undefined)
+              start = new Date().getTime();
+            var secs = (new Date().getTime() - start) / 1000;
+            var timeDiv = document.getElementById("model-time");
+            timeDiv.innerHTML = secs.toFixed(1);
+            var rad = undefined;
+            var act = undefined;
+            var update = false;
+            if (sitLen == 0 && x == 0.0) { // go straight
+            } else if (sitLen < 1 && x >= llcStart) { // swing out
+              rad = rad2deg(Math.atan(maneuvers.slopeModel(llcStart, llcEnd) / (2 * street.WIDTH_TO_HEIGHT)));
+              update = true;
+            } else if (sitLen < 2 && x >= llcEnd) { // go straight
+              rad = 0;
+              update = true;
+            } else if (sitLen < 3 && x >= rlcStart) { // swing back in
+              rad = rad2deg(Math.atan(-1.0 * maneuvers.slopeModel(llcStart, llcEnd) / (2 * street.WIDTH_TO_HEIGHT)));
+              update = true;
+            } else if (sitLen < 4 && x >= rlcEnd) { // go straight again
+              rad = 0;
+              update = true;
+            }
+            if (update) {
+              act = "setYaw(P, "+ rad.toFixed(1) +"&deg;, "+ secs.toFixed(1) +")";
+              for (var i = 0; i < MAX_SIT_LEN; ++i) {
+                var prevActDiv = document.getElementById("model-act-"+ i);
+                prevActDiv.style.color = "black";
+              }
+              var id = "model-act-"+ sitLen;
+              var actDiv = document.getElementById(id);
+              actDiv.style.color = "green";
+              actDiv.style.visibility = "visible";
+              actDiv.innerHTML = act;
+              //actDiv.innerHTML = "$"+ act +"$";
+              //MathJax.Hub.Queue(["Typeset", MathJax.Hub, id]);
+
+              id = "model-sit";
+              var sitDiv = document.getElementById(id);
+              sitDiv.innerHTML = "do("+ act +",<br />"+ sitDiv.innerHTML +")";
+              //sitDiv.innerHTML = "$do("+ act +",$<br />"+ sitDiv.innerHTML +"$)$";
+              //MathJax.Hub.Queue(["Typeset", MathJax.Hub, id]);
+
+              ++sitLen;
+            }
+          },
+          trace : function (x) {
+            return x < 0.5 ? (maneuvers.llcModel(llcStart, llcEnd))(x) : (maneuvers.rlcModel(rlcStart, rlcEnd))(x);
+          },
+          x : 0.0,
+          doTrace : true,
+          finishHandler : finishHandler
+        });
+      }
+
+      function runManeuver() {
+        timer = new Timer();
+        runModel("model-street");
+      }
+
+      addSlideInitializer("model-slide", function (slide) { clearManeuver(); runManeuver(); });
+      addSlideFinalizer("model-slide", function (slide) { clearManeuver(); });
+    }
+
+    model_animation();
+  </script>
+</div>
+
+<div class="slide">
+  <h1>Sample Programs</h1>
+  <div class="bodybox centerbox">
+    <div class="code">
+      <b>proc</b> leftLaneChange($car_1$)
+      <div class="line" style="left: 1em;">$\pi \theta$ . ($0&deg; < \theta \leq 90&deg;$)?;</div>
+      <!--<div class="line" style="left: 3.5em;">waitFor(onRightLane($car_1$), $\tau$);</div>-->
+      <div class="line" style="left: 1em;">$\pi \tau_1$ . setYaw($car_1$, $\theta$, $\tau_1$);</div>
+      <div class="line" style="left: 1em;">$\pi \tau_2$ . waitFor(onLeftLane($car_1$), $\tau_2$)</div>
+      <div class="line" style="left: 3.5em;">setYaw($car_1$, $0&deg;$, $\tau_2$);</div>
+    </div>
+    <div class="code">
+      <b>proc</b> overtake($car_1$, $car_2$)
+      <!--<div class="line" style="left: 1em;">$\pi \tau_1$ . waitFor(behind($car_1$, $car_2$), $\tau_1$);</div>-->
+      <div class="line" style="left: 1em;">$\pi \tau_1$ . $\pi v$ . setVeloc($car_1$, $v$, $\tau_1$)</div>
+      <div class="line" style="left: 3.5em;">
+        <div style="display: inline; position: absolute; left: -4em;">$\parallel$</div>
+        leftLaneChange($car_1$);</div>
+      <div class="line" style="left: 1em;">$\pi \tau_2$ . waitFor(behind($car_2$, $car_1$), $\tau_2$);</div>
+      <div class="line" style="left: 3.5em;">rightLaneChange($car_1$)</div>
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <h1>Semantics of our Golog</h1>
+  <div class="bodybox">
+    <ul>
+      <li>Continuous change
+      <div style="display: inline; position: absolute; right: 0%; margin-right: 3em; color: gray">ccGolog</div></li>
+      <li>Decision theory for online execution
+      <div style="display: inline; position: absolute; right: 0%; margin-right: 3em; color: gray;">DTGolog</div>
+      <ul>
+        <li>reward function $r(s)$ rates situations</li>
+        <li>resolve nondeterminism to reach $r$-maximizing situation after $\ell$ actions</li>
+      </ul>
+      </li>
+      <li>Concurrency $\delta_1 \parallel \delta_2$ for multiple agents acting in parallel
+      <div style="display: inline; position: absolute; right: 0%; margin-right: 3em; color: gray;">ConGolog</div>
+      </li>
+      <li>Stochastic actions for robustness (later)
+      <div style="display: inline; position: absolute; right: 0%; margin-right: 3em; color: gray;">stGolog, DTGolog</div>
+      </li>
+    </ul>
+    <ul style="display: none; margin-top: 3ex;">
+      <!--
+      <li>$Next(\delta, \gamma, \delta') \equiv$ $\gamma$ is a next primitive/test/stochastic action of $\delta$,<br/>
+      e.g., $Next((A; B; C), \ \ A, \ \ (B; C))$<br/>
+      and $Next((\pi x . A(x); B(x)), \ \ A(3), \ \ B(3))$</li>
+      -->
+      <li>$Next({\color{red}{\delta}}, {\color{green}{\gamma}}, {\color{blue}{\delta'}}) \equiv$
+      ${\color{green}{\gamma}}; {\color{blue}{\delta'}}$ is a decomposition of ${\color{red}{\delta}}$ with ${\color{green}{\gamma}}$ atomic</li>
+      <li class="no-bullet"><div class="tab"></div>e.g., $Next(\ {\color{red}{\pi x . A(x); B(x) ; C(x)}}, \ \ {\color{green}{A(3)}}, \ \ {\color{blue}{B(3); C(3)}} \ )$</li>
+      <li>$transPr(\delta, s, \delta', s')$ chooses the reward-maximizing decomposition of $\delta$</li>
+      <!--<li>$value(\delta, s, \ell) =$ the estimated reward after executing $\ell$ steps of $\delta$-->
+      <!--<li>$transAtPr(\gamma, s, s') = p$ executes $\gamma$ in $s$</li>-->
+    </ul>
+  </div>
+</div>
+
+<div class="slide">
+  <h1>Plan Recognition</h1>
+  <div class="bodybox">
+    <ul>
+      <li>Translate observation $\phi$ at time $\tau$ as action $match(\phi, \tau)$ with
+      \[Poss(match(\phi, \tau), s) \equiv \phi[s, \tau] \]</li>
+      <li>Reward $r(s) =$ number of $match$ actions in $s$<br />
+      $\Rightarrow$ interpreter tries to explain observations<br />
+      e.g., &nbsp;&nbsp; $\pi \theta$ . setYaw($car_1$, $\theta$, $\tau_1$) &nbsp;&nbsp; picks a $\theta$ that matches observations</li>
+    </ul>
+  </div>
+</div>
+
+<div class="slide">
+  <h1>Plan Recognition</h1>
+  <div class="bodybox">
+    <div class="block">
+      <div class="block-title">Test hypothesis $\delta_1 \parallel \ldots \parallel \delta_n$ for agents $1, \ldots, n$</div>
+      <p>$s := S_0$, $\delta := \delta_1 \parallel \ldots \parallel \delta_n$</p>
+      <p><b>Loop</b></p>
+      <ul class="no-bullet">
+        <li><b>If</b> $\delta$ has $&lt; \ell$ (look-ahead) $match$ actions <b>then</b><br />
+        <div class="tab"></div>wait for $\phi, \tau$ and set $\delta := \delta \parallel match(\phi, \tau)$</li>
+        <li><b>Else if</b> $transPr(\delta, s, \delta', s') > 0$ (next action executable) <b>then</b><br />
+        <div class="tab"></div>set $\delta := \delta'$, $s := s'$</li>
+        <li><b>Else</b><br />
+        <div class="tab"></div>fail and reject hypothesis</li>
+      </ul>
+      <p><b>EndLoop</b></p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="plan-recog-slide">
+  <h1>Plan Recognition</h1>
+  <div id="plan-recog-street" class="street stop-traversal no-print"></div>
+  <div class="only-print">
+    <ul>
+      <li>Multiple agents (R, P) act in parallel</li>
+      <li>$\ell$ observations are buffered to resolve nondeterminism reasonably</li>
+      <li>Incremental execution of the program</li>
+    </ul>
+  </div>
+  <div class="code" style="margin-left: auto; margin-right: auto; margin-top: 3ex; font-size: 85%;">
+    <div style="position: absolute;">
+      <div class="line" id="candidate-line-1" style="left: 1em;">$\pi \tau_1$ . $\pi v_1$ . setVeloc(R, $v_1$, $\tau_1$)</div>
+    </div>
+    <div style="position: relative; left: 50%; top: 0%; width: 50%;">
+      <div class="line" id="candidate-line-2" style="left: 1em;">
+        <div style="display: inline; position: absolute; left: -1.5em; font-weight: normal;">||</div>
+        $\pi \tau_2$ . $\pi v_2$ . setVeloc(P, $v_2$, $\tau_2$);</div>
+      <div class="line" id="candidate-line-3" style="left: 1em;">$\pi \tau_3$ . $\pi \theta_1$ . setYaw(P, $\theta_1$, $\tau_3$);</div>
+      <div class="line" id="candidate-line-4" style="left: 1em;">$\pi \tau_4$ . waitFor(onLeftLane(P), $\tau_4$);</div>
+      <div class="line" id="candidate-line-5" style="left: 3.5em;">setYaw(P, 0, $\tau_4$);</div>
+      <div class="line" id="candidate-line-6" style="left: 1em;">$\pi \tau_5$ . waitFor(behind(R, P), $\tau_5$);</div>
+      <div class="line" id="candidate-line-7" style="left: 1em;">$\pi \tau_6$ . $\pi \theta_2$ . setYaw(P, $\theta_2$, $\tau_6$);</div>
+      <div class="line" id="candidate-line-8" style="left: 1em;">$\pi \tau_7$ . waitFor(onRightLane(P), $\tau_7$);</div>
+      <div class="line" id="candidate-line-9" style="left: 3.5em;">setYaw(P, 0, $\tau_7$)</div>
+    </div>
+    <div class="line" style="left: 1em;">
+    <div id="plan-recog-ellipsis" style="display: hidden;"><div style="display: inline; position: absolute; left: -1.5em; font-weight: normal;">||</div>...</div>
+    <div id="plan-recog-obs" style="display: inline;"></div>
+    </div>
+  </div>
+  <div id="plan-recog-play" class="incremental stop-traversal no-print">
+    <!--<p>Look-ahead $\ell = 2$</p>-->
+  </div>
+  <script type="text/javascript">
+    function plan_recog_animation() {
+      var timer = null;
+      var start = undefined;
+      var lineId = function (i) {
+        return "candidate-line-"+ i;
+      };
+      var obsId = function (i) {
+        return (i != undefined) ? "plan-recog-obs-"+ i : "plan-recog-obs";
+      };
+
+      function clearManeuvers() {
+        if (timer != null)
+          timer.stop();
+        timer = null;
+        removeChildren(["plan-recog-street", obsId()]);
+        document.getElementById("plan-recog-ellipsis").style.display = "none";
+        //document.getElementById("plan-recog-nil").style.display = "block";
+        for (var i = 0, obs = undefined; (obs = document.getElementById(obsId(i))) != undefined; ++i) {
+          obs.style.color = "inherit";
+        }
+        for (var i = 1, line = undefined; (line = document.getElementById(lineId(i))) != undefined; ++i) {
+          var color = "black";// (i == 1) ? "red" : "black";
+          line.style.color = color;
+        }
+      }
+
+      var carsArrived = 0;
+      function finishHandler() {
+        ++carsArrived;
+        if (carsArrived == 2) {
+          setTimeout(function() {
+            /* Automatic restart disabled. */
+            //clearManeuvers();
+            //runManeuvers();
+            carsArrived = 0;
+          }, 750);
+        }
+      }
+
+      var VELOC_RED = 0.2 / 2;
+      var VELOC_POL = 0.3 / 2;
+
+      function runObservedPassingManeuver(streetId) {
+        var fps = 0.5 / 2;
+        var street = new Street(streetId);
+        var car1 = new Car("car-red.png", street, timer);
+        var car2 = new Car("car-police.png", street, timer);
+        var obsCnt = 0;
+        var redX = undefined;
+        var lookAhead = 2;
+
+        function markExecuted(id) {
+          var line = document.getElementById(id);
+          line.style.color = "#666666";
+        }
+
+        function markCurrent(id) {
+          var line = document.getElementById(id);
+          line.style.fontWeight = "bold";
+        }
+
+        car1.move({
+          fps : fps,
+          veloc : function (x) { return VELOC_RED; },
+          trace : maneuvers.straightRightWithSlightNoise,
+          x : 0.25,
+          finishHandler : function () { /*car1.hideSnapshots(); car2.hideSnapshots();*/ finishHandler(); }
+        });
+
+        car2.move({
+          //delay : 0.01, // hack avoids having the first observation (due to car2's reset) already
+          fps : fps,
+          veloc : function (x) { return VELOC_POL; },
+          update : function (x) {
+            if (start == undefined)
+              start = new Date().getTime();
+            var secs = (new Date().getTime() - start) / 1000;
+
+            var obsDiv = document.getElementById("plan-recog-obs");
+            var obs = document.createElement("div");
+            /* This is very ugly, but more elegant versions are not that easy to implement:
+             * we simply duplicate the movement of car1 with x-offset and subsequent additions
+             * of DELTA as in Car.move() for car1. */
+            if (redX == undefined)
+              redX = 0.25;
+            else
+              redX += 0.2 / fps * VELOC_RED;
+            var redY = maneuvers.straightRightWithSlightNoise(redX);
+            var polX = x;
+            var polY = maneuvers.slowOvertake(x);
+            //var logAnd = "$\\wedge";
+            var logAnd = "&and;";
+            obs.id = obsId(obsCnt);
+            obs.setAttribute("id", obsId(obsCnt));
+            obs.innerHTML = "match((x(P), y(P)) = ("+ (100 * polX).toFixed(1) +", "+ (10 * polY).toFixed(2) +") "+ logAnd +" "+
+                                  "(x(R), y(R)) = ("+ (100 * redX).toFixed(1) +", "+ (10 * redY).toFixed(2)+"), "+
+                                  secs.toFixed(1) +")";
+            obs.innerHTML = "<div style=\"display: inline; position: absolute; left: -1.5em; font-weight: normal;\">||<\/div>" + obs.innerHTML;
+            obsDiv.appendChild(obs);
+            //MathJax.Hub.Queue(["Typeset", MathJax.Hub, obsId(obsCnt)]);
+            //var prevObs = document.getElementById(obsId(obsCnt - 1));
+            //if (prevObs)
+            //  prevObs.innerHTML += ";";
+            ++obsCnt;
+
+            var MAX_OBS = 3;
+            //document.getElementById("plan-recog-nil").style.display = "none";
+            if (obsCnt == MAX_OBS) {
+              markExecuted("plan-recog-ellipsis");
+              document.getElementById("plan-recog-ellipsis").style.display = "block";
+            }
+            if (obsCnt > MAX_OBS) {
+              var oldObs = document.getElementById(obsId(obsCnt - MAX_OBS));
+              oldObs.style.display = "none";
+            }
+
+            for (var i = 0; i < obsCnt - lookAhead; ++i) {
+              markExecuted(obsId(i));
+            }
+
+            var execs = [{ obs: 1, lines: [1, 2] },
+                         { obs: 2, lines: [3] },
+                         { obs: 3, lines: [4, 5] },
+                         { obs: 5, lines: [6] },
+                         { obs: 7, lines: [7] },
+                         { obs: 9, lines: [8, 9] }];
+            //for (var i = 1, obs = undefined; (obs = document.getElementById(lineId(i))) != undefined; ++i) {
+            //  if (obs.style.color == "green")
+            //    obs.style.color = "inherit";
+            //}
+            for (var i = 0; i < execs.length; ++i) {
+              if (obsCnt == execs[i].obs) {
+                for (var j = 1, obs = undefined; (obs = document.getElementById(lineId(j))) != undefined; ++j) {
+                  if (obs.style.fontWeight != "normal")
+                    obs.style.fontWeight = "normal";
+                }
+                for (var j = 0; j < execs[i].lines.length; ++j) {
+                  markCurrent(lineId(execs[i].lines[j]));
+                }
+              }
+              if (obsCnt - lookAhead == execs[i].obs) {
+                for (var j = 0; j < execs[i].lines.length; ++j) {
+                  markExecuted(lineId(execs[i].lines[j]));
+                }
+              }
+            }
+          },
+          trace : maneuvers.slowOvertake,
+          x : 0.1,// -0.025,
+          finishHandler : finishHandler
+        });
+      }
+
+      function runManeuvers() {
+        timer = new Timer();
+        runObservedPassingManeuver("plan-recog-street");
+      }
+
+      addSlideInitializer("plan-recog-slide", function (slide) { clearManeuvers(); runManeuvers(); timer.pause(); });
+      addSlideFinalizer("plan-recog-slide", function (slide) { clearManeuvers(); });
+      addNodeInitializer("plan-recog-play", function (node) { if (timer != undefined) { timer.play(); } });
+      addNodeFinalizer("plan-recog-play", function (node) { if (timer != undefined) { timer.pause(); } });
+    }
+
+    plan_recog_animation();
+  </script>
+</div>
+
+<div id="tolerance-slide" class="slide">
+  <h1>Robustness</h1>
+  <div class="bodybox">
+    <ul>
+      <li>People don't drive exactly straight $\rightarrow$ be tolerant!
+      <ul>
+        <li>well-rested $\rightarrow$ very straight</li>
+        <li>tired $\rightarrow$ oscillates</li>
+        <li>drunk $\rightarrow$ hardly stays on the road</li>
+      </ul>
+      </li>
+    </ul>
+    <div class="street-container no-print">
+      <div id="tolerance-street" class="street stop-traversal no-print" style="margin: 0; overflow: visible;"></div>
+    </div>
+    <div id="tolerance-play" class="incremental no-print"></div>
+    <ul>
+      <li>setYaw($car$, $\theta$, $\tau$) stochastic action with outcomes setYaw$'$($car$, $\theta$, $\Delta$, $\tau$)</li>
+      <!--<li>Observations $\bigwedge_i |x(car_i) - \Delta x(car_i)| \leq X_i \wedge |y(car_i) - \Delta y(car_i)| \leq Y_i$</li>-->
+      <li>Large tolerances $\Delta$ are unlikely</li>
+      <li>Confidence $=$ sum of prob. of outcome actions with tolerances $\Delta$ big enough for the observations</li>
+    </ul>
+  </div>
+  <script type="text/javascript">
+    function tolerance_animation() {
+      var timer1 = null;
+      var timer2 = null;
+
+      var TOLERANCES = [0.2, 0.15, 0.1, 0.05, 0.03];
+      var tolIndex = 0;
+
+      function clearManeuvers() {
+        if (timer1 != null)
+          timer1.stop();
+        timer1 = null;
+        if (timer2 != null)
+          timer2.stop();
+        timer2 = null;
+        tolIndex = 0;
+        removeChildren(["tolerance-street"]);
+      }
+
+      function finishHandler() {
+        setTimeout(function() {
+          scan("tolerance-street");
+        }, 1000);
+      }
+
+      var street = undefined;
+      var observations = new Array();
+
+      function prepare(streetId) {
+        var fps = 5;
+        street = new Street(streetId);
+        var car = new Car("car-transparent.png", street, timer1);
+        var obsTrace = function (x) { return maneuvers.straightRight(x) + 2 * x * maneuvers.noise(x); };
+        tolIndex = 0;
+
+        car.move({
+          fps : fps,
+          veloc : function (x) { return (x < 0.85) ? 2.75 : 999999; }, // avoids last observation, so that we can display a check mark after x = 0.9
+          trace : obsTrace,
+          update : function (x) {
+            car.snapshotCopy(true);
+            observations.push({x : x, y : obsTrace(x)});
+          },
+          x : 0.1
+        });
+      }
+
+      function scan() {
+        var fps = 25;
+        var car = new Car("car-yellow.png", street, timer2);
+        var fadeOut = false;
+        var opacity = 1.0;
+        var modelTrace = maneuvers.straightRight;
+        var relTol = TOLERANCES[tolIndex];
+        tolIndex = (tolIndex + 1) % TOLERANCES.length;
+        var absTol = Math.floor(relTol * street.ctx.canvas.height);
+
+        var originalHeight = car.height;
+        car.setImageInCar = function (img, above) {
+          var s = (above) ? "position: relative; top: "+ (-1.0 * (originalHeight + absTol + 3)) +"px;" : "";
+          this.elem.innerHTML = "<img src=\"graphics/"+ img +"\" style=\""+ s +" margin-left: "+ Math.floor(this.width / 6) +"px; height: "+ originalHeight +"px;\" alt=\"\" />";
+        }
+
+        car.height += 2 * absTol;
+        car.elem.style.borderTop = "2px solid black";
+        car.elem.style.borderBottom = "2px solid black";
+        car.elem.style.padding = absTol +"px 0px "+ absTol +"px 0px";
+        car.elem.style.zIndex = 99;
+        car.setImageInCar("blue-question-mark.png", true);
+
+        car.move({
+          delay : 0.01,
+          fps : fps,
+          veloc : function (x) {
+            if (fadeOut) {
+              if (opacity > 0.0) {
+                return 0;
+              } else {
+                return 99999;
+              }
+            }
+            return 0.5;
+          },
+          trace : modelTrace,
+          update : function (x) {
+            for (var i = 0; i < observations.length; ++i) {
+              if (observations[i].x <= x && Math.abs(modelTrace(x) - observations[i].y) >= relTol) {
+                fadeOut = true;
+                car.setImageInCar("red-cross.png");
+              }
+            }
+            if (!fadeOut && x >= 0.925) {
+              fadeOut = true;
+              car.setImageInCar("green-check-mark.png");
+            }
+            if (fadeOut && opacity >= 0.0) {
+              car.elem.style.opacity = Math.max(opacity, 0.0);
+              opacity -= 0.02;
+            }
+          },
+          x : 0.0,
+          finishHandler : function () { finishHandler(); street.elem.removeChild(car.elem); car = null; }
+        });
+      }
+
+      function runManeuvers() {
+        timer1 = new Timer();
+        timer2 = new Timer();
+        prepare("tolerance-street");
+        scan();
+      }
+
+      addSlideInitializer("tolerance-slide", function (slide) { clearManeuvers(); runManeuvers(); timer2.pause(); });
+      addSlideFinalizer("tolerance-slide", function (slide) { clearManeuvers(); });
+      addNodeInitializer("tolerance-play", function (node) { if (street != undefined) { timer2.play(); } });
+      addNodeFinalizer("tolerance-play", function (node) { if (street != undefined) { timer2.pause(); } });
+    }
+
+    tolerance_animation();
+  </script>
+</div>
+
+<div class="slide" id="aggr-caut-slide">
+  <h1>Demo</h1>
+  <div class="bodybox">
+    <div id="aggr-caut-street2" class="street stop-traversal no-print">
+      <div class="unremovable streetlabel">Aggressive</div>
+    </div>
+    <div id="aggr-caut-street1" class="street stop-traversal no-print">
+      <div class="unremovable streetlabel">Cautious</div>
+    </div>
+    <div class="only-print">
+      <ul>
+        <li>Three cars in the road
+        <ul>
+          <li>A on the right lane,</li>
+          <li>B on the left lane,</li>
+          <li>C wants to pass A</li>
+        </ul>
+        </li>
+        <li>Two options for C: <img alt="" src="../tikz/aggressive-cautious.svg" /></li>
+      </ul>
+    </div>
+    <!--<div class="stop-traversal incremental" style="margin-top: 2ex;">-->
+      <p>Limitations in experiment:</p>
+      <ul>
+        <li>Acceleration approximated by partially linear functions</li>
+        <li>Velocities and "accelerations" hard-coded</li>
+        <!--<li>Applied lateral tolerance to longitudinal movement, too</li>-->
+      </ul>
+    <!--</div>-->
+  </div>
+  <script type="text/javascript">
+    function aggr_caut_animation() {
+      var timer = null;
+
+      function clearManeuvers() {
+        if (timer != null)
+          timer.stop();
+        timer = null;
+        removeChildren(["aggr-caut-street1", "aggr-caut-street2"]);
+      }
+
+      var carsArrived = 0;
+      function finishHandler() {
+        ++carsArrived;
+        if (carsArrived == 6) {
+          setTimeout(function() {
+            clearManeuvers();
+            runManeuvers();
+            carsArrived = 0;
+          }, 750);
+        }
+      }
+
+      var VELOC_YEL = 0.375;
+      var VELOC_RED = 0.675;
+      var VELOC_POL_MIN = 0.55;
+      var VELOC_POL_MAX = 1.5;
+
+      function runAggressivePassing(streetId) {
+        var fps = 25;
+        var street = new Street(streetId);
+        var car1 = new Car("car-yellow.png", street, timer);
+        var car2 = new Car("car-red.png", street, timer);
+        var car3 = new Car(["car-police-blue2.png", "car-police-red2.png"], street, timer);
+
+        car1.move({
+          fps : fps,
+          veloc : function (x) { return VELOC_YEL; },
+          trace : maneuvers.straightRight,
+          x : 0.0,
+          finishHandler : finishHandler
+        });
+
+        car2.move({
+          delay : 4.0,
+          fps : fps,
+          veloc : function (x) { return VELOC_RED; },
+          trace : maneuvers.straightLeft,
+          x : 0.0,
+          finishHandler : finishHandler
+        });
+
+        car3.move({
+          delay : 5.0,
+          fps : fps,
+          veloc : function (x) { return VELOC_POL_MAX; },
+          trace : function (x) { return (maneuvers.llcModel(0.3, 0.5))(x); },
+          x : 0.0,
+          finishHandler : finishHandler
+        });
+      }
+
+      function runCautiousPassing(streetId) {
+        var fps = 25;
+        var street = new Street(streetId);
+        var car1 = new Car("car-yellow.png", street, timer);
+        var car2 = new Car("car-red.png", street, timer);
+        var car3 = new Car("car-police.png", street, timer);
+
+        car1.move({
+          fps : fps,
+          veloc : function (x) { return VELOC_YEL; },
+          trace : maneuvers.straightRight,
+          x : 0.0,
+          finishHandler : function () { finishHandler(); }
+        });
+
+        car2.move({
+          delay : 4.0,
+          fps : fps,
+          veloc : function (x) { return VELOC_RED; },
+          trace : maneuvers.straightLeft,
+          x : 0.0,
+          finishHandler : finishHandler
+        });
+
+        var declT = 0.05;
+        var declLength = 0.25;
+        var relPos = function (x) { return (x - declT) / declLength - 0.5; }
+        car3.move({
+          delay : 5.0,
+          fps : fps,
+          veloc : function (x) {
+            var max = VELOC_POL_MAX;
+            var min = VELOC_POL_MIN;
+            if (x < declT) {
+              return max;
+            } else if (x < declT + declLength) {
+              return max - (Math.atan(relPos(x)) / Math.PI + 1) / 2 * (max - min);
+            } else {
+              return min;
+            }
+          },
+          update : function (x) {
+            var max = VELOC_POL_MAX;
+            var min = VELOC_POL_MIN;
+            if (declT <= x && x < declT + declLength) {
+              var relScale = Math.cos(relPos(x) * Math.PI);
+              var scaleX = 1.0 - relScale / 1.75;
+              var scaleY = 1.0 + relScale / 2.5;
+              var transform = "scaleX("+ scaleX +") scaleY("+ scaleY +")";
+              car3.elem.style.MozTransform += transform;
+              car3.elem.style.msTransform += transform;
+              car3.elem.style.OTransform += transform;
+              car3.elem.style.WebkitTransform += transform;
+              car3.elem.style.transform += transform;
+            }
+          },
+          trace : function (x) { return (maneuvers.llcModel(0.55, 0.65))(x); },
+          x : 0.0,
+          finishHandler : finishHandler
+        });
+      }
+
+      function runManeuvers() {
+        timer = new Timer();
+        runAggressivePassing("aggr-caut-street2");
+        runCautiousPassing("aggr-caut-street1");
+      }
+
+      addSlideInitializer("aggr-caut-slide", function (slide) { clearManeuvers(); runManeuvers(); });
+      addSlideFinalizer("aggr-caut-slide", function (slide) { clearManeuvers(); });
+      addNodeInitializer("aggr-caut-street2", function (node) { clearManeuvers(); runManeuvers(); });
+      //addNodeFinalizer("aggr-caut-street2", function (node) { clearManeuvers(); });
+    }
+
+    aggr_caut_animation();
+  </script>
+</div>
+
+<div class="slide">
+  <h1>Demo</h1>
+  <div class="bodybox">
+  <div class="video-container no-print" id="aggr-02-25fps"></div>
+  <div class="only-print" style="width: 100%;">
+    <img src="videos/aggr-02-25fps.png" alt="Screenshot of demo video" width="50%" />
+  </div>
+  </div>
+</div>
+
+<div class="slide">
+  <h1>Evaluation</h1>
+  <div class="bodybox">
+    <ul>
+      <li>Passing maneuver
+      <ul>
+        <li>single hypothesis, system needs to confirm or reject</li>
+        <li>6 drivers, 120 maneuvers</li>
+        <li>no false positive, no false negatives</li>
+      </ul>
+      </li>
+      <li>Cautious vs aggressive maneuver
+      <ul>
+        <li>two alternative hypotheses, system needs to choose</li>
+        <li>2 drivers, 24 maneuvers</li>
+        <li>recognition confidences:
+        <table class="eval">
+          <tr>
+            <td style="border: 0;"></th>
+            <td style="border: 0;"></th>
+            <th colspan="2">reality</th>
+          </tr>
+          <tr>
+            <td style="border: 0;"></th>
+            <td style="border: 0;"></th>
+            <th>cautious</th>
+            <th>aggressive</th>
+          </tr>
+          <tr>
+            <th rowspan="2">hypothesis</th>
+            <th>cautious</th>
+            <td style="color: green;">0.3<div style="display: inline; visibility: hidden;">0</div></td>
+            <td style="color: red;">0.0<div style="display: inline; visibility: hidden;">0</div></td>
+          </tr>
+          <tr>
+            <th>aggressive</th>
+            <td style="color: red;">0.0<div style="display: inline; visibility: hidden;">0</div></td>
+            <td style="color: green;">0.57</td>
+          </tr>
+        </table>
+        </li>
+      </ul>
+      </li>
+      <li>New implementation has lower latency</li>
+    </ul>
+  </div>
+</div>
+
+<div class="slide">
+  <h1>Conclusion</h1>
+  <div class="bodybox">
+    <ul>
+      <li>Programs capture typical behavior</li>
+      <li>Execute programs in sync with observations
+      <ul>
+        <li style="position: absolute;">online</li>
+        <li style="position: relative; margin-left: 15em;">multi-agent</li>
+        <li style="position: absolute;">continuous</li>
+        <li style="position: relative; margin-left: 15em;">robust</li>
+        <li>no action sensor</li>
+      </ul>
+      </li>
+    </ul>
+    <p>Future Work:</p>
+    <ul>
+      <li>More realistic models
+      <ul>
+        <li>longitudinal robustness?</li>
+        <li>nonlinear / qualitative motion?</li>
+      </ul>
+      </li>
+      <li>Incomplete knowledge</li>
+      <li>Extrapolate program $\rightarrow$ future situation</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>

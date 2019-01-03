@@ -1,0 +1,134 @@
+/* vim:textwidth=80:shiftwidth=2:softtabstop=2:expandtab
+
+   Copyright (c) 2005-2010 W3C (MIT, ERCIM, Keio), All Rights Reserved.
+   W3C liability, trademark, document use and software licensing
+   rules apply, see:
+
+   http://www.w3.org/Consortium/Legal/copyright-documents
+   http://www.w3.org/Consortium/Legal/copyright-software
+
+   Copyright (c) 2012 Christoph Schwering
+
+   RWTH dark blue:  #00549f
+   RWTH light blue: #98bae5
+   RWTH light blue in SVG image: #83a7dd
+*/
+
+body {
+  color: black;
+  background-color: white;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+}
+
+div.slide.titlepage {
+  text-align: center;
+}
+
+div.slide {
+  z-index: 20;
+  margin: 0 0 0 0;
+  padding: 0;
+  border-width: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  line-height: 120%;
+  background-color: transparent;
+  position: relative;
+  height: 100%;
+}
+
+div.background {
+  z-index: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: auto;
+  height: 6ex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+  background-color: #98bae5;
+}
+
+/* this rule is hidden from IE which doesn't support + selector */
+/*div.slide + div[class].slide { page-break-before: always; }*/
+
+div.slide h1 {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 800;
+  color: white;
+  background-color: #98bae5;
+  text-align: center;
+  -webkit-text-fill-color: white; /* Will override color (regardless of order) */
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: /*black*/ #00549f;
+}
+
+div.background img, div.background object {
+  background-color: white;
+  border: 1px solid black;
+  padding: 0.5ex;
+}
+
+div.background img, div.background object {
+  height: 4ex;
+  margin: 0.5ex;
+  z-index: 2;
+}
+
+#logo-left {
+  float: left;
+}
+
+#logo-right {
+  float: right;
+}
+
+li pre { margin-left: 0; }
+
+blockquote { font-style: italic }
+
+img { background-color: transparent }
+
+p.copyright { font-size: smaller }
+
+.center { text-align: center }
+.footnote { font-size: smaller; margin-left: 2em; }
+
+a img { border-width: 0; border-style: none }
+
+a {text-decoration: none}
+a:link, a:visited { color: inherit }
+a:hover, a:active { color: red; text-decoration: underline }
+
+.navbar a:link {color: white}
+.navbar a:visited {color: yellow}
+.navbar a:active {color: red}
+.navbar a:hover {color: red}
+
+div dt
+{
+  margin-left: 0;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+div dd
+{
+  margin-left: 2em;
+  margin-bottom: 0.5em;
+}
+
+p.subhead { font-weight: bold; margin-top: 2em; }
+
+.smaller { font-size: smaller }
+
+td,th { padding: 0.2em }
+
+img { image-rendering: optimize-quality; }
+

@@ -1,0 +1,134 @@
+/* vim:textwidth=80:shiftwidth=2:softtabstop=2:expandtab
+   Copyright (c) 2012 Christoph Schwering
+
+   RWTH dark blue:  #00549f
+   RWTH light blue: #98bae5
+   RWTH light blue in SVG image: #83a7dd
+*/
+
+div.video-container {
+  width: 100%;
+  text-align: center;
+}
+
+video.video {
+  width: 80%;
+  height: 80%;
+}
+
+div.street {
+  /* This combination doesn't work, because the major browsers change
+   * overflow-y to auto (i.e., scollbars when needed) when overflow-x
+   * is hidden.
+   * That can be easily fixed by wrapping a div with class street-container
+   * around the street div (the two following style definitions care about
+   * that).
+  overflow-y: visible;
+  overflow-x: hidden;
+  */
+  overflow: hidden;
+  position: relative; 
+  margin: 2ex 1.5em 2ex 1.5em;
+  /* border: 1px black solid; */
+}
+
+div.street-container {
+  overflow: hidden;
+  margin: 2ex 1.5em 2ex 1.5em;
+}
+
+div.street-container div.street {
+  overflow: visible;
+  margin: 0;
+}
+
+div.car-label {
+  font-size: 80%;
+  text-shadow: -1px 1px black, 1px 1px black, 1px -1px black, -1px -1px black;
+  color: white;
+  position: absolute;
+  top: 50%;
+  height: 3ex;
+  margin-top: -1.5ex;
+  right: 1.0ex;
+}
+
+div.street-label {
+  overflow: visible;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: transparent;
+  color: white;
+  -webkit-text-fill-color: white; /* Will override color (regardless of order) */
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
+  font-weight: 800;
+  width: 100%;
+  height: 100%;
+  padding: 0.5ex 0.5ex 0.5ex 0.5ex;
+}
+
+.box {
+  display: inline-block;
+  color: #555555;
+  padding: 1ex;
+  border: 2px #555555 dashed;
+  border-radius: 2ex;
+  -moz-border-radius: 2ex;
+}
+
+div.formula-table {
+  display: table;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+}
+
+div.formula-table div.tr {
+  display: table-row;
+  max-width: 50%;
+}
+
+div.formula-table div.tr div.td {
+  display: table-cell;
+  text-align: left;
+  padding-top: 1ex;
+  padding-bottom: 1ex;
+  max-width: 50%;
+}
+
+div.formula-table div.td+div.td {
+  padding-left: 5em;
+}
+
+
+
+div.situation {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+div.dynamic-situation {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+div.action { display: inline; }
+div.action:before { content: "do("; }
+div.action:after { content: ", "; }
+
+div.action .wait-action-timestamp { display: inline; }
+
+div.s0 { display: inline; /* margin-left: 0px is set in javascript (for relative margin of future actions */ }
+div.s0:after { content: ")))...)"; }
+div.s0:nth-child(1):after { content: ""; }
+div.s0:nth-child(2):after { content: ")"; }
+div.s0:nth-child(3):after { content: "))"; }
+div.s0:nth-child(4):after { content: ")))"; }
+div.s0:nth-child(5):after { content: "))))"; }
+div.s0:nth-child(6):after { content: ")))))"; }
+

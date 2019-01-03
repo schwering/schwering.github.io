@@ -1,0 +1,161 @@
+/* vim:textwidth=80:shiftwidth=2:softtabstop=2:expandtab
+   Copyright (c) 2012 Christoph Schwering
+
+   RWTH dark blue:  #00549f
+   RWTH light blue: #98bae5
+   RWTH light blue in SVG image: #83a7dd
+*/
+
+div.video-container {
+  width: 100%;
+  text-align: center;
+}
+
+video.video {
+  width: 80%;
+  height: 80%;
+}
+
+div.street {
+  overflow: hidden;
+  /* This combination doesn't work, because the major browsers change overflow-y to auto (i.e., scollbars when needed):
+  overflow-x: hidden;
+  overflow-y: visible;
+  */
+  position: relative; 
+  margin: 2ex 1.5em 2ex 1.5em;
+}
+
+div.street-container {
+  overflow: hidden;
+  margin: 0ex 1.5em 0ex 1.5em;
+  width: 90%;
+  padding-top: 1ex;
+  padding-bottom: 4ex;
+}
+
+div.street-container div.street {
+  overflow: visible;
+  margin: 0;
+}
+
+div.car-label {
+  font-size: 80%;
+  text-shadow: -1px 1px black, 1px 1px black, 1px -1px black, -1px -1px black;
+  color: white;
+  position: absolute;
+  top: 50%;
+  height: 3ex;
+  margin-top: -1.5ex;
+  right: 1.0ex;
+}
+
+div.streetlabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: transparent;
+  color: black;
+  /*border: 1pt solid black;*/
+  padding: 0.5ex 0.5ex 0.5ex 0.5ex;
+}
+
+.model-act-line {
+  width: 100%;
+  height: 3ex;
+}
+
+#model-act-0,
+#model-act-1,
+#model-act-2,
+#model-act-3 {
+  position: absolute;
+  visibility: hidden;
+  padding: 5pt 5pt 5pt 5pt;
+  border: 1px solid black;
+}
+
+div.tab {
+  width: 2em;
+  margin: 1ex;
+  display: inline;
+}
+
+div.tabb {
+  border: 1px solid black;
+  width: 2em;
+  margin: 1ex;
+  display: inline;
+}
+
+div.block div.block-title {
+  /*
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  color: white;
+  background-color: #00549f;
+  background-color: #98bae5;
+  */
+  font-weight: bold;
+}
+
+div.code,
+div.block {
+  line-height: 150%;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  padding-left: 1em;
+  padding-right: 1em;
+  border-style: solid;
+  border-left-width: 1em;
+  border-top-width: thin;
+  border-right-width: thin;
+  border-bottom-width: thin;
+  border-color: #98bae5;
+  color: #00549f;
+  background-color: #E4E5E7;
+  position: relative;
+  margin-top: 3ex;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.code {
+  min-width: 25em;
+  max-width: 80%;
+}
+
+.code .line {
+  position: relative;
+}
+
+table.eval {
+  border: 0;
+}
+
+table.eval tr {
+  border: 0;
+}
+
+table.eval th,
+table.eval td {
+  border: 1px solid black;
+}
+
+table.eval th {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  font-weight: normal;
+  text-align: center;
+  vertical-align: middle;
+}
+
+table.eval td {
+  text-align: center;
+  padding-left: 2ex;
+}
+

@@ -1,0 +1,95 @@
+/* vim:textwidth=80:shiftwidth=2:softtabstop=2:expandtab
+
+   Copyright (c) 2005-2010 W3C (MIT, ERCIM, Keio), All Rights Reserved.
+   W3C liability, trademark, document use and software licensing
+   rules apply, see:
+
+   http://www.w3.org/Consortium/Legal/copyright-documents
+   http://www.w3.org/Consortium/Legal/copyright-software
+
+   Copyright (c) 2012 Christoph Schwering
+
+   RWTH dark blue:  #00549f
+   RWTH light blue: #98bae5
+   RWTH light blue in SVG image: #83a7dd
+*/
+/* rectangular blue bullet + unfold/nofold/fold widget */
+
+/*
+ setting class="outline on ol or ul makes it behave as an
+ ouline list where blocklevel content in li elements is
+ hidden by default and can be expanded or collapsed with
+ mouse click. Set class="expand" on li to override default
+*/
+
+ol.outline li:hover { cursor: pointer }
+ol.outline li.nofold:hover { cursor: default }
+
+ul.outline li:hover { cursor: pointer }
+ul.outline li.nofold:hover { cursor: default }
+
+ol.outline { list-style:decimal; }
+ol.outline ol { list-style-type:lower-alpha }
+
+ol.outline li.nofold {
+  padding: 0 0 0 20px;
+  background: transparent url(../graphics/nofold-dim.gif) no-repeat 0px 0.3em;
+}
+ol.outline li.unfolded {
+  padding: 0 0 0 20px;
+  background: transparent url(../graphics/fold-dim.gif) no-repeat 0px 0.3em;
+}
+ol.outline li.folded {
+  padding: 0 0 0 20px;
+  background: transparent url(../graphics/unfold-dim.gif) no-repeat 0px 0.3em;
+}
+ol.outline li.unfolded:hover {
+  padding: 0 0 0 20px;
+  background: transparent url(../graphics/fold.gif) no-repeat 0px 0.3em;
+}
+ol.outline li.folded:hover {
+  padding: 0 0 0 20px;
+  background: transparent url(../graphics/unfold.gif) no-repeat 0px 0.3em;
+}
+
+ul.outline li.nofold {
+  padding: 0 0 0 52px;
+  background: transparent url(../graphics/bullet-nofold-dim.gif) no-repeat 5px 0.3em;
+}
+ul.outline li.unfolded {
+  padding: 0 0 0 52px;
+  background: transparent url(../graphics/bullet-fold-dim.gif) no-repeat 5px 0.3em;
+}
+ul.outline li.folded {
+  padding: 0 0 0 52px;
+  background: transparent url(../graphics/bullet-unfold-dim.gif) no-repeat 5px 0.3em;
+}
+ul.outline li.unfolded:hover {
+  padding: 0 0 0 52px;
+  background: transparent url(../graphics/bullet-fold.gif) no-repeat 5px 0.3em;
+}
+ul.outline li.folded:hover {
+  padding: 0 0 0 52px;
+  background: transparent url(../graphics/bullet-unfold.gif) no-repeat 5px 0.3em;
+}
+
+li ul.outline li.nofold {
+  padding: 0 0 0 21px;
+  background: transparent url(../graphics/nofold-dim.gif) no-repeat 5px 0.3em;
+}
+li ul.outline li.unfolded {
+  padding: 0 0 0 21px;
+  background: transparent url(../graphics/fold-dim.gif) no-repeat 5px 0.3em;
+}
+li ul.outline li.folded {
+  padding: 0 0 0 21px;
+  background: transparent url(../graphics/unfold-dim.gif) no-repeat 5px 0.3em;
+}
+li ul.outline li.unfolded:hover {
+  padding: 0 0 0 21px;
+  background: transparent url(../graphics/fold.gif) no-repeat 5px 0.3em;
+}
+li ul.outline li.folded:hover {
+  padding: 0 0 0 21px;
+  background: transparent url(../graphics/unfold.gif) no-repeat 5px 0.3em;
+}
