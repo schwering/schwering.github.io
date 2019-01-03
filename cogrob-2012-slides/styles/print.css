@@ -1,0 +1,57 @@
+/* vim:textwidth=80:shiftwidth=2:softtabstop=2:expandtab
+
+   Copyright (c) 2005-2010 W3C (MIT, ERCIM, Keio), All Rights Reserved.
+   W3C liability, trademark, document use and software licensing
+   rules apply, see:
+
+   http://www.w3.org/Consortium/Legal/copyright-documents
+   http://www.w3.org/Consortium/Legal/copyright-software
+
+   Copyright (c) 2012 Christoph Schwering
+
+   RWTH dark blue:  #00549f
+   RWTH light blue: #98bae5
+   RWTH light blue in SVG image: #83a7dd
+*/
+
+@media all {
+  .only-print { display: none; }
+}
+
+@media print {
+  h1 { font-weight: normal; }
+  a { color: black; }
+  pre { font-size: 60% }
+  div.code, div.block { border: 1px solid black; color: inherit; }
+  div.bodybox { position: relative; margin-left: 1em; margin-right: 1em; display: block; }
+
+  /* workaround IE's failure to support background on li for print media */
+  ul li {
+    list-style: disc;
+    padding-left: 0;
+    background: none;
+}
+
+  div.slide div.titlebox,
+  div.slide h1 {
+    background: transparent;
+    color: black;
+  }
+
+  .no-print { display: none; }
+  .only-print { display: block; }
+
+  div.code, div.block, ul, ol, li, ul li, ol li, ul li li { line-height: 100%; }
+
+  div.slide {
+    font-size: 20pt;
+    page-break-after: always;
+    page-break-inside: avoid;
+    /* When a slide contains a long formula, the whole slide is shrunk and
+     * floats back to the previous page.
+     * overflow-x avoids this, but it also leads to parts of the formula
+     * not displayed. */
+    overflow-x: hidden;
+  }
+}
+

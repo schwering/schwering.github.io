@@ -1,0 +1,48 @@
+body         { font-family: "Roboto", "Open Sans", sans-serif; background-color: #09c; color: #222; }
+h1,h2        { font-weight: normal; }
+h1           { font-size: 1.6em; margin-bottom: 0.0ex; }
+h2           { font-size: 1.2em; margin-bottom: 0.0ex; }
+p, ul, ol    { margin-top: 1.5ex; margin-bottom: 1.5ex; }
+ol ul, ol ol { margin-top: 0ex; margin-bottom: 0ex; }
+p            { text-align: justify; }
+b, em        { font-weight: 500; font-style: normal; }
+b.b          { font-weight: bold; }
+
+hr           { display: block; margin: 1.5em 0; padding: 0; border: 0; border-top: 1.5pt solid #50e9ff; }
+hr.thin      { border-top: 0.25pt solid #50e9ff; }
+hr.double    { border-top: 4px double #50e9ff; }
+
+img.photo    { float: right; margin-left: 1em; margin-bottom: .75ex; border: 5px solid #F44611; width: 10em; max-width: 25%; }
+.icon        { height: 0.8em; vertical-align: baseline; }
+
+a, a:link, a:visited { color: #48d1e5; text-decoration: none; }
+a:hover, a:active { color: #50e9ff; text-decoration: underline; }
+
+.authors        { }
+.authors a      { color: inherit; }
+
+.title   { }
+.title a { color: default; }
+
+.venue   { }
+.venue a { color: inherit; font-style: italic; }
+
+.extra         { color: default; opacity: 0.35; }
+.extra a       { color: default; }
+
+.authors + .title::before { content: " \2013 "; }
+.venue + .authors::before { content: " by "; }
+.title + .conf::before { content: " at "; }
+.title + .uni::before { content: " at "; }
+.title + .journal::before { content: " in "; }
+* + .extra::before { content: " \2013 "; }
+
+
+li       { margin-top: .50ex; margin-bottom: .50ex; }
+li li    { margin-top: .25ex; margin-bottom: .25ex; }
+ul li    { list-style-type: disc; }
+ul li.thesis,
+ul li.paper  { list-style-type: circle; }
+ul li.system { list-style-type: square; }
+
+.highlight { background-color: #ffa; }

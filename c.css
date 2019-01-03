@@ -1,0 +1,44 @@
+body         { font-family: "Roboto", "Open Sans", sans-serif; background-color: #eee; color: #333; }
+h1,h2        { font-weight: normal; }
+p, ul, ol    { margin-top: 1.5ex; margin-bottom: 1.5ex; }
+ol ul, ol ol { margin-top: 0; margin-bottom: 0; }
+p            { text-align: justify; }
+b, em        { font-weight: 500; font-style: normal; }
+b.b          { font-weight: bold; }
+
+hr           { display: block; margin: 1.5em 0; padding: 0; border: 0; border-top: 1pt solid #09c; }
+
+img.photo    { float: right; margin-left: 1em; margin-bottom: .75ex; border: 5px solid #F44611; width: 10em; max-width: 25%; }
+.icon        { height: 0.8em; vertical-align: baseline; }
+
+a, a:link, a:visited, a:hover, a:active { color: #058; }
+a, a:link, a:visited { text-decoration: none; }
+a:hover, a:active { text-decoration: underline; }
+
+.authors        { }
+.authors a      { color: inherit; }
+
+.title   { }
+.title a { color: #058; }
+
+.venue   { }
+.venue a { color: inherit; font-style: italic; }
+
+.extra         { color: inherit; opacity: 0.5; }
+.extra a       { color: #058; }
+
+.authors + .title::before { content: ": "; }
+.venue + .authors::before { content: " by "; }
+.title + .conf::before { content: " at "; }
+.title + .uni::before { content: " at "; }
+.title + .journal::before { content: " in "; }
+* + .extra::before { content: " \2013 "; }
+
+li       { margin-top: .50ex; margin-bottom: .50ex; }
+li li    { margin-top: .25ex; margin-bottom: .25ex; }
+ul li    { list-style-type: disc; }
+ul li.thesis,
+ul li.paper  { list-style-type: circle; }
+ul li.system { list-style-type: square; }
+
+.highlight { background-color: #ffa; }

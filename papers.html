@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="refresh" content="2; URL=research.html">
+<link rel="canonical" href="research.html">
+<title>Redirecting to research.html</title>
+</head>
+<body>
+  <h1>Redirecting to research.html</h1>
+  <script>
+    let url = window.location.href;
+    url = url.replace('/papers.html', '/index.html');
+    if (!url.hash)
+      url += '#research';
+    window.location.replace(url);
+  </script>
+</body>
+</html>
+
