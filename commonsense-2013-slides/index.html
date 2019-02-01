@@ -88,32 +88,31 @@
             return;
           }
 
-          var prompt = document.createElement("div");
-          prompt.style.position = "absolute";
-          prompt.style.left = "25%";
-          prompt.style.top = "20%";
-          prompt.style.width = "50%";
-          prompt.style.height = "60%";
-          prompt.style.backgroundColor = "orange";
-          prompt.style.borderWidth = "thick";
-          prompt.style.borderColor = "black";
-          prompt.style.borderStyle = "solid";
-          prompt.style.overflow = "auto";
-          prompt.style.zIndex = "99";
+          var mathJaxPrompt = document.createElement("div");
+          mathJaxPrompt.style.position = "absolute";
+          mathJaxPrompt.style.left = "25%";
+          mathJaxPrompt.style.bottom = "10%";
+          mathJaxPrompt.style.width = "50%";
+          //mathJaxPrompt.style.height = "43%";
+          mathJaxPrompt.style.backgroundColor = "orange";
+          mathJaxPrompt.style.borderWidth = "thick";
+          mathJaxPrompt.style.borderColor = "black";
+          mathJaxPrompt.style.borderStyle = "solid";
+          mathJaxPrompt.style.overflow = "auto";
+          mathJaxPrompt.style.zIndex = "99";
 
-          prompt.innerHTML = 
+          mathJaxPrompt.innerHTML = 
             "<p>You have no local copy of MathJax (in <code>./MathJax<\/code>).<\/p>"+
             "<p>I'm trying to load MathJax dynamically. If we don't have an Internet connection, "+
             "this will fail and LaTeX formulas won't be typeset.<\/p>"+
             "<p>You can <a href=\"https://github.com/mathjax/MathJax/zipball/v2.0-latest\">download MathJax<\/a>, "+
-            "extract the ZIP-file and move the created folder to <code>./MathJax<\/code>."+
-            "<p><b>You can also simply execute <code>./download.sh<\/code> to get MathJax and videos used in this "+
-            "presentation.<\/b><\/p>";
+            "extract the ZIP-file and move the created folder to <code>./MathJax<\/code>, or run <code>./download.sh<\/code>."+
+            "<p>Click to hide this message.<\/p>";
 
-          document.body.appendChild(prompt);
+          document.body.appendChild(mathJaxPrompt);
 
-          prompt.addEventListener("click", function (e) {
-            document.body.removeChild(prompt);
+          mathJaxPrompt.addEventListener("click", function (e) {
+            document.body.removeChild(mathJaxPrompt);
             if (e.cancel != undefined)
               e.cancel = true;
             if (e.returnValue != undefined)
@@ -121,7 +120,7 @@
             e.stopPropagation();
           }, false);
 
-          setTimeout(function() { document.body.removeChild(prompt); }, 20000);
+          setTimeout(function() { document.body.removeChild(mathJaxPrompt); }, 20000);
         }, 1000);
       }
 
@@ -1166,33 +1165,63 @@
 
       /* It looks best under Chrome. Especially IE looks bad. */
       if (navigator.userAgent.indexOf("Chrome") == -1) {
-        var prompt = document.createElement("div");
-        prompt.style.position = "absolute";
-        prompt.style.width = "50%";
-        prompt.style.left = "25%";
-        prompt.style.top = "15%";
-        prompt.style.backgroundColor = "orange";
-        prompt.style.borderWidth = "thick";
-        prompt.style.borderColor = "black";
-        prompt.style.borderStyle = "solid";
-        prompt.style.overflow = "auto";
-        prompt.style.zIndex = "99";
+        var browserPrompt = document.createElement("div");
+        browserPrompt.style.position = "absolute";
+        browserPrompt.style.width = "50%";
+        browserPrompt.style.left = "25%";
+        browserPrompt.style.top = "10%";
+        browserPrompt.style.backgroundColor = "orange";
+        browserPrompt.style.borderWidth = "thick";
+        browserPrompt.style.borderColor = "black";
+        browserPrompt.style.borderStyle = "solid";
+        browserPrompt.style.overflow = "auto";
+        browserPrompt.style.zIndex = "99";
 
-        prompt.innerHTML = "<p style=\"text-align: center;\">These slides look best under Chrome.<\/p>";
+        browserPrompt.innerHTML = "<p style=\"text-align: center;\">These slides look best under Chrome.<\/p>";
 
-        document.body.appendChild(prompt);
+        document.body.appendChild(browserPrompt);
 
-        setTimeout(function () { document.body.removeChild(prompt); }, 5000);
+        setTimeout(function () { document.body.removeChild(browserPrompt); }, 2500);
 
-        prompt.addEventListener("click", function (e) {
-          document.body.removeChild(prompt);
+        browserPrompt.addEventListener("click", function (e) {
+          document.body.removeChild(browserPrompt);
           if (e.cancel != undefined)
             e.cancel = true;
           if (e.returnValue != undefined)
             e.returnValue = false;
           e.stopPropagation();
         }, false);
+      }
 
+      /* Link to paper. */
+      var linkToPaper = true;
+      if (linkToPaper) {
+        var paperPrompt = document.createElement("div");
+        paperPrompt.style.position = "absolute";
+        paperPrompt.style.width = "50%";
+        paperPrompt.style.left = "25%";
+        paperPrompt.style.top = "25%";
+        paperPrompt.style.backgroundColor = "blue";
+        paperPrompt.style.borderWidth = "thick";
+        paperPrompt.style.borderColor = "black";
+        paperPrompt.style.borderStyle = "solid";
+        paperPrompt.style.overflow = "auto";
+        paperPrompt.style.zIndex = "99";
+
+        paperPrompt.innerHTML = "<p style=\"text-align: center;\">The <a href=\"https://schwering.github.io/commonsense-2013.pdf\">paper is available here:<br /><code>https://schwering.github.io/commonsense-2013.pdf</code></a><br />But the slides may be more accessible.<\/p>";
+
+        document.body.appendChild(paperPrompt);
+
+        setTimeout(function () { document.body.removeChild(paperPrompt); }, 5000);
+
+        paperPrompt.addEventListener("click", function (e) {
+          document.body.removeChild(paperPrompt);
+          if (e.cancel != undefined)
+            e.cancel = true;
+          if (e.returnValue != undefined)
+            e.returnValue = false;
+          e.stopPropagation();
+        }, false);
       }
     };
 
@@ -2190,10 +2219,10 @@
         $\NTG(b,c,r,s)$, &nbsp;
         $\TTC(b,c,r,s)$, &nbsp;
         $\m{lane}(b, s) = \ell$
-      <!--
-        <li>Represent partial functions
-        <li>Use formulas for time and acceleration</li>
-      -->
+      <ul>
+        <li>Represent partial functions $\ntg(b,c,s) = r$, &nbsp; $\ttc(b,c,s) = r$
+        <li>Situation parameter $s$ encodes time and acceleration</li>
+      </ul>
       </li>
       <li>Actions: &nbsp;
         $\m{accel}(b, q)$, &nbsp;
@@ -2223,7 +2252,7 @@
     <div style="position: fixed; bottom: 3ex; right: 3ex;">
       <div class="box">
         If $t_i$ contains $\ntg(b,c,s)$ then $t_1 = t_2$ expands to<br />
-        $(\exists r) (\NTG(b,c,r,s) \wedge (t_1)^{\ntg(b,c,s)}_r = (t_2)^{\ntg(b,c,s)}_r)$.<br />
+        $\exists r \, \big(\NTG(b,c,r,s) \wedge (t_1)^{\ntg(b,c,s)}_r = (t_2)^{\ntg(b,c,s)}_r\big)$.<br />
         Analogously for $\ttc(b,c,s)$ and $\frac{x}{y}$.
       </div>
     </div>
@@ -2231,19 +2260,19 @@
     \begin{align*}
     & \NTG(b, c, r, \m{do}(a, s)) \equiv{}\\
     & \quad
-        (\exists t) \DOT
+        \exists t \, \left(
         a = \m{wait}(t) \wedge %\ttc(b, c, s) \neq 0 \wedge{}
         r = \ntg(b, c, s) - t \cdot \tfrac{\ntg(b, c, s)}{\ttc(b, c, s)}
-        \; \vee{}\\
+        \right) \; \vee{}\\
     & \quad
-        (\exists q) \DOT
+        \exists q \, \left(
         a = \m{accel}(b, q) \wedge %q \neq 0 \wedge{}
         r = \tfrac{1}{q} \cdot \ntg(b, c, s)
-        \; \vee{}\\
+        \right) \; \vee{}\\
     & \quad
         \NTG(b, c, r, s) \wedge
-        (\forall t) a \neq \m{wait}(t) \wedge{}
-        (\forall q) a \neq \m{accel}(b, q)
+        \forall t \, a \neq \m{wait}(t) \wedge{}
+        \forall q \, a \neq \m{accel}(b, q)
     \end{align*}
     <p style="margin-top: 4ex; margin-left: 0px;">$\TTC$ analogously.</p>
   </div>
@@ -2803,7 +2832,7 @@
 <div class="slide" id="evaluation-graph-slide">
   <h1>Plan Recognition Example</h1>
   <div class="vcenter hcenter" id="evaluation-trace-container" style="width: 100%; height: 80%;">
-    <p style="text-align: center;">Goal: find program execution s.t. observed NTG + TTC and model NTG + TTC coincide</p>
+    <p style="text-align: center;">Goal: execute program in a way that matches <i>observed</i> NTG + TTC with <i>model</i> NTG + TTC</p>
     <img id="evaluation-trace-obs" src="graphics/trace-obs.svg" style="display: none; position: absolute;" />
     <img id="evaluation-trace-mod" src="graphics/trace-mod.svg" style="display: none; position: absolute;" />
   </div>
